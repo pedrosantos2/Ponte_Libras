@@ -151,8 +151,20 @@ python tradutor_final.py
 Experimento central — mesma rede e pipeline, variando apenas a **diversidade de
 sinalizantes** por sinal (avaliação com pessoa inteira fora do treino):
 
-Validação cruzada leave-one-signer-out (3 folds, `validacao_cruzada.py`),
-12 classes — média geral **54,3%**:
+Estado atual (validação cruzada leave-one-signer-out, 12 sinais + classe OUTRO
+com 485 amostras — janelas de transição + 200 palavras fora do vocabulário):
+média **51,7%** — AMARELO 81%, BANHEIRO 78%, MEDO 74%, OI 73%, ACONTECER 63%,
+OUTRO 60%; classes com 3 sinalizantes (frutas, GOSTAR, BOM) entre 11% e 50%.
+No fluxo contínuo (`testar_tradutor.py`) os 5 sinais conhecidos testados são
+reconhecidos sem "caronas" e o repouso fica em silêncio; sinais inteiros fora
+do vocabulário ainda disparam ~3 glossas indevidas em 2 vídeos (era 6 antes do
+OUTRO ampliado) — limitação de *open-set* assumida.
+
+Trade-off observado: um OUTRO grande melhora a rejeição de gestos desconhecidos
+mas rouba fronteira das classes com poucos dados — que só melhoram com mais
+sinalizantes.
+
+Histórico — rodada MALTA (12 classes, sem OUTRO), média **54,3%**:
 
 | Sinais | Sinalizantes | Acurácia média | Observação |
 |---|---|---|---|

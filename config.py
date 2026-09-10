@@ -58,7 +58,9 @@ def grupo_origem(nome_arquivo: str) -> str:
     - repetições do mesmo sinalizante ('minds_s05_r1'/'minds_s05_r2' ou
       'malta_a41_...') pertencem à mesma PESSOA.
     """
-    nome = _re.sub(r'^aug_\d+_', '', nome_arquivo)
+    # prefixos que não mudam a ORIGEM: variação aumentada, janela de
+    # transição (trans_ini_/trans_fim_) e o próprio 'ext_' do processador
+    nome = _re.sub(r'^(aug_\d+_|trans_(ini|fim)_|ext_)+', '', nome_arquivo)
     m = _re.search(r'minds_s(\d+)', nome)
     if m:
         return f'minds_s{m.group(1)}'

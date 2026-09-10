@@ -37,7 +37,7 @@ PALAVRAS = {
 # Classe negativa OUTRO: N palavras aleatórias FORA do vocabulário, uma
 # amostra cada, de sinalizantes variados — ensina o modelo a dizer
 # "isso não é nenhum sinal que eu conheço".
-AMOSTRAS_OUTRO = 30
+AMOSTRAS_OUTRO = 200
 SEMENTE = 42
 
 BASE_URL = "https://huggingface.co/datasets/MALTA-Lab/MALTA_LIBRAS/resolve/main/malta_libras_complete"
