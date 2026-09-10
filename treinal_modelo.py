@@ -2,6 +2,7 @@ import json
 import os
 import numpy as np
 from sklearn.model_selection import train_test_split
+from sklearn.utils.class_weight import compute_class_weight
 from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import LSTM, Dense, Dropout
@@ -37,7 +38,7 @@ for action in ACTIONS:
             # cruas, a rede sempre vê a versão invariante à posição/escala
             sequences.append(normalizar_sequencia(res))
             labels.append(LABEL_MAP[action])
-            grupos.append(f"{action}/{grupo_origem(file)}")
+            grupos.append(grupo_origem(file))
         else:
             print(f"⚠️ Ignorando arquivo corrompido/antigo: {file} | Shape: {res.shape}")
 
@@ -68,6 +69,8 @@ if any(len(gs) >= 2 for gs in grupos_por_classe.values()):
         else:
             print(f"⚠️ {ACTIONS[classe]} tem só 1 vídeo original: fica fora do teste. "
                   f"Colete mais vídeos desse sinal!")
+    # A pessoa de teste sai do treino em TODAS as classes (as janelas de
+    # transição dela, rotuladas OUTRO, também vão para o teste)
     mascara_teste = np.isin(grupos, list(grupos_teste))
     X_train, y_train = X[~mascara_teste], y[~mascara_teste]
     X_test, y_test = X[mascara_teste], y[mascara_teste]
@@ -95,9 +98,15 @@ model = Sequential([
 ])
 model.compile(optimizer='Adam', loss='categorical_crossentropy', metrics=['categorical_accuracy'])
 
+# PESOS DE CLASSE: a classe OUTRO tem muito mais amostras (janelas de
+# transição de todos os vídeos); sem os pesos a rede aprenderia a chutar
+# OUTRO para tudo
+pesos = compute_class_weight('balanced', classes=np.arange(len(ACTIONS)), y=labels)
+class_weight = dict(enumerate(pesos))
+
 print(f"\n--- TREINANDO COM {len(X_train)} SEQUÊNCIAS (teste: {len(X_test)}) ---")
 model.fit(X_train, y_train, epochs=EPOCHS, batch_size=BATCH_SIZE,
-          validation_data=(X_test, y_test))
+          validation_data=(X_test, y_test), class_weight=class_weight)
 
 # --- MODELO FINAL: treina do zero com 100% DOS DADOS ---
 # A avaliação acima mede a acurácia honesta (pessoa fora do treino).
@@ -108,7 +117,8 @@ print("\n--- TREINANDO MODELO FINAL COM 100% DOS DADOS ---")
 model_final = tf.keras.models.clone_model(model)
 model_final.compile(optimizer='Adam', loss='categorical_crossentropy',
                     metrics=['categorical_accuracy'])
-model_final.fit(X, y, epochs=EPOCHS, batch_size=BATCH_SIZE, verbose=2)
+model_final.fit(X, y, epochs=EPOCHS, batch_size=BATCH_SIZE, verbose=2,
+                class_weight=class_weight)
 
 # --- SALVA O MODELO E A ORDEM DAS CLASSES ---
 # O labels.json garante que a inferência use EXATAMENTE a mesma ordem

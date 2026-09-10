@@ -8,6 +8,7 @@ média — o número estável e defensável para o TCC.
 """
 import os
 import numpy as np
+from sklearn.utils.class_weight import compute_class_weight
 from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import LSTM, Dense, Dropout
@@ -57,17 +58,24 @@ y = to_categorical(labels, num_classes=len(ACTIONS)).astype(int)
 grupos_por_classe = {ci: sorted({g for g, l in zip(grupos, labels) if l == ci})
                      for ci in set(labels)}
 
+# Pesos de classe: OUTRO tem muito mais amostras (janelas de transição)
+pesos = compute_class_weight('balanced', classes=np.arange(len(ACTIONS)), y=labels)
+class_weight = dict(enumerate(pesos))
+
 # --- RODA OS FOLDS ---
 acertos_classe = {a: [] for a in ACTIONS}
 for fold in range(N_FOLDS):
     # Em cada fold, a pessoa de teste de cada classe muda (rotaciona)
     grupos_teste = {ci: gs[fold % len(gs)] for ci, gs in grupos_por_classe.items()}
-    mascara_teste = np.array([grupos_teste[l] == g for g, l in zip(grupos, labels)])
+    # A pessoa de teste sai do treino em TODAS as classes (suas janelas de
+    # transição, rotuladas OUTRO, vão junto para o teste)
+    mascara_teste = np.isin(grupos, list(set(grupos_teste.values())))
 
     print(f"\n===== FOLD {fold + 1}/{N_FOLDS} =====")
     model = montar_modelo()
     model.fit(X[~mascara_teste], y[~mascara_teste],
-              epochs=EPOCHS, batch_size=BATCH_SIZE, verbose=0)
+              epochs=EPOCHS, batch_size=BATCH_SIZE, verbose=0,
+              class_weight=class_weight)
 
     pred = model.predict(X[mascara_teste], verbose=0).argmax(1)
     reais = labels[mascara_teste]
