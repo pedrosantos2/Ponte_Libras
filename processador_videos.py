@@ -2,35 +2,20 @@ import cv2
 import mediapipe as mp
 import numpy as np
 import os
-from pathlib import Path
-from urllib.request import urlopen
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 
-# --- CONFIGURAÇÕES ---
-SIGNS = ["OI", "GOSTAR", "LARANJA", "MELANCIA"]
-INPUT_BASE_FOLDER = Path("videos_baixados") # Onde estão os .mp4
-OUTPUT_BASE_FOLDER = Path("DATA")           # Onde sairão os .npy
-FRAME_COUNT = 30                            # Padrão da sua LSTM
-COORD_SIZE = 126                            # 2 mãos (21*3*2)
-
-MODEL_PATH = Path("hand_landmarker.task")
-MODEL_URL = "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task"
-
-# --- GARANTIR O MODELO ---
-if not MODEL_PATH.exists():
-    print("Baixando modelo hand_landmarker.task...")
-    import ssl
-    context = ssl._create_unverified_context()
-    with urlopen(MODEL_URL, timeout=30, context=context) as response:
-        MODEL_PATH.write_bytes(response.read())
+from config import (
+    ACTIONS, DATA_PATH, VIDEOS_PATH, FRAME_COUNT, COORD_SIZE, NUM_HANDS,
+    ensure_hand_landmarker,
+)
 
 # --- SETUP MEDIAPIPE TASKS ---
-base_options = python.BaseOptions(model_asset_path=str(MODEL_PATH))
+base_options = python.BaseOptions(model_asset_path=ensure_hand_landmarker())
 options = vision.HandLandmarkerOptions(
     base_options=base_options,
     running_mode=vision.RunningMode.IMAGE,
-    num_hands=2,
+    num_hands=NUM_HANDS,
     min_hand_detection_confidence=0.5 # Menor para aceitar vídeos de internet
 )
 detector = vision.HandLandmarker.create_from_options(options)
@@ -51,7 +36,7 @@ def extrair_coords_do_video(video_path):
         coords = np.zeros(COORD_SIZE)
         if results.hand_landmarks:
             all_pts = []
-            for hand in results.hand_landmarks[:2]:
+            for hand in results.hand_landmarks[:NUM_HANDS]:
                 for lm in hand:
                     all_pts.extend([lm.x, lm.y, lm.z])
             coords[:len(all_pts)] = all_pts
@@ -88,9 +73,9 @@ def extrair_coords_do_video(video_path):
 # --- LOOP PRINCIPAL PELAS PASTAS ---
 print("\n🔄 Iniciando processamento de vídeos...\n")
 
-for sign in SIGNS:
-    input_dir = INPUT_BASE_FOLDER / sign
-    output_dir = OUTPUT_BASE_FOLDER / sign
+for sign in ACTIONS:
+    input_dir = VIDEOS_PATH / sign.lower()
+    output_dir = DATA_PATH / sign
     output_dir.mkdir(parents=True, exist_ok=True)
     
     if not input_dir.exists():
@@ -102,10 +87,12 @@ for sign in SIGNS:
     
     for v_name in videos:
         v_path = input_dir / v_name
+        save_path = output_dir / f"ext_{v_name}.npy"
+        if save_path.exists():
+            continue  # já extraído — não reprocessa (extração é lenta)
         try:
             dados = extrair_coords_do_video(v_path)
             if dados is not None:
-                save_path = output_dir / f"ext_{v_name}.npy"
                 np.save(save_path, dados)
         except Exception as e:
             print(f"❌ Erro ao processar {v_name}: {e}")

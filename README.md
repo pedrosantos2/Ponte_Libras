@@ -29,23 +29,28 @@ enviado ao Ollama, que devolve a tradução em português.
 ## 📂 Estrutura do projeto
 
 ```
-traduto-libras/
+tradutor-libras/
+├── config.py               # ⭐ Configuração central (sinais, caminhos, hiperparâmetros)
 ├── coletor_dados.py        # Coleta sinais pela webcam (grava sequências .npy)
 ├── processador_videos.py   # Extrai coordenadas de vídeos .mp4 → .npy
 ├── augment_total.py        # Data augmentation (10× variações por amostra)
-├── treinal_modelo.py       # Treina a LSTM → modelo_libras.h5 / .keras
+├── treinal_modelo.py       # Treina a LSTM → modelo_libras.keras + labels.json
 ├── tradutor_final.py       # Tradutor em tempo real (webcam + OpenCV + Ollama)
 ├── Modelfile               # Definição do modelo Gemma customizado (Ollama)
+├── requirements.txt        # Dependências Python
 │
 ├── videos_baixados/        # Vídeos-fonte por sinal (entrada do processador)
-│   ├── oi/ gostar/ laranja/ melancia/ ...
+│   ├── oi/ gostar/ laranja/ abacaxi/ banana/ morango/ ...
 ├── DATA/                   # Dataset de coordenadas (.npy), uma pasta por sinal
-│   ├── OI/ GOSTAR/ OBRIGADO/ ...
+│   ├── OI/ GOSTAR/ LARANJA/ ABACAXI/ BANANA/ MORANGO/ ...
 │
 ├── hand_landmarker.task    # Modelo MediaPipe (baixado automaticamente)
-├── modelo_libras.h5        # Pesos da LSTM treinada (legado Keras)
-└── modelo_libras.keras     # Pesos da LSTM treinada (formato novo)
+├── modelo_libras.keras     # Pesos da LSTM treinada
+└── labels.json             # Ordem das classes usada no treino (gerado junto)
 ```
+
+> Para adicionar um sinal novo, edite **apenas** a lista `ACTIONS` em `config.py` —
+> todos os scripts importam de lá.
 
 > ⚠️ Arquivos de dados (`*.npy`), modelos (`*.h5`, `*.task`) e o `venv/` são ignorados pelo Git
 > (veja `.gitignore`). O repositório versiona apenas o código e alguns vídeos-fonte.
@@ -60,13 +65,11 @@ traduto-libras/
 
 ### Dependências Python
 
-Ainda não há um `requirements.txt`. Instale manualmente:
-
 ```bash
 python3.12 -m venv venv
 source venv/bin/activate          # Windows: venv\Scripts\activate
 
-pip install opencv-python mediapipe numpy tensorflow scikit-learn requests
+pip install -r requirements.txt
 ```
 
 ### Modelo de tradução (Ollama)
@@ -115,7 +118,7 @@ Treina a LSTM com os `.npy` em `DATA/` e salva os pesos:
 
 ```bash
 python treinal_modelo.py
-# → modelo_libras.h5
+# → modelo_libras.keras + labels.json
 ```
 
 ### 4. Traduzir em tempo real
@@ -143,30 +146,65 @@ python tradutor_final.py
 
 ---
 
-## ⚠️ Inconsistências conhecidas
+## 📊 Resultados atuais
 
-Este é um projeto em evolução e os scripts ainda não compartilham uma configuração central.
-Antes de treinar/inferir, alinhe a lista de sinais entre os arquivos:
+Experimento central — mesma rede e pipeline, variando apenas a **diversidade de
+sinalizantes** por sinal (avaliação com pessoa inteira fora do treino):
 
-- A lista de sinais (`ACTIONS` / `SIGNS`) está **duplicada e divergente** entre os scripts:
-  - `tradutor_final.py` → `["OI", "GOSTAR", "MELANCIA"]`
-  - `treinal_modelo.py` / `processador_videos.py` / `augment_total.py` → `["OI", "GOSTAR", "LARANJA", "MELANCIA"]`
-  - `coletor_dados.py` → `["OI", "GOSTAR", "MANDIOCA"]` (e captura **apenas 1 mão / 63 coords**)
-- A pasta `DATA/` contém **~20 sinais**, bem mais do que os scripts referenciam.
-- A ordem de `ACTIONS` no tradutor **deve ser idêntica** à usada no treino, ou as predições
-  apontarão para o sinal errado.
-- `coletor_dados.py` grava 63 coordenadas (1 mão), incompatível com as 126 (2 mãos) esperadas
-  pelo treino — use `processador_videos.py` ou ajuste o coletor antes de misturar as fontes.
+Validação cruzada leave-one-signer-out (3 folds, `validacao_cruzada.py`),
+12 classes — média geral **54,3%**:
 
-> Há também uma versão web experimental (FastAPI + Vite/React) cujos artefatos de build estão em
-> `backend/` e `frontend/dist/`, mas o código-fonte não está versionado neste repositório.
+| Sinais | Sinalizantes | Acurácia média | Observação |
+|---|---|---|---|
+| OI | 8 (MALTA) | **81%** | Era 0% com 3 pessoas — resgatado pelo MALTA |
+| AMARELO, BANHEIRO | 8 | 83% | Estáveis |
+| MEDO, ACONTECER | 8 | 67–71% | |
+| BOM (novo) | 8 (MALTA) | 62% | Sinal na região da boca |
+| NAO (novo) | 9 (MALTA) | 42% | Amostras contêm frases compostas |
+| GOSTAR | 2 | 38% | Caiu com o vocabulário maior |
+| Frutas (LARANJA, ABACAXI, BANANA, MORANGO) | 3 | 14–39% | Cluster congestionado na boca |
+
+Achado da rodada: os sinais localizados na **região da boca** (frutas, BOM, NAO)
+se confundem entre si — a locação é o parâmetro discriminante e o pipeline atual
+(só mãos, ancorado no pulso) não a captura bem. Somado a landmarks mais ruidosos
+das amostras 224×224 do MALTA, o ganho em OI (+81pp) veio com queda nas frutas.
+
+Conclusões:
+- O gargalo é a **quantidade de pessoas diferentes** no treino: 2 pessoas → volátil
+  (0–100% dependendo de quem testa); 7 pessoas → ~85% estável.
+- **OI falha sistematicamente** por ser datilologia (sinal quase estático de
+  configuração de dedos) — a LSTM é especializada em movimento. Sinais
+  datilológicos exigem tratamento próprio.
+- O modelo de produção (`modelo_libras.keras`) é treinado com **100% dos dados**
+  após a avaliação — prática padrão em datasets pequenos.
+
+Histórico do diagnóstico (bom material de metodologia):
+- 100% "de acurácia" com vazamento de dados (augment antes do split) → número ilusório
+- 33% com split por grupo (teste = sinalizante nunca visto) → baseline real
+- 48,5% após normalização por sequência (preserva locação/movimento) + augmentation
+  de espelhamento/rotação/time-warp + rede menor
+- Erros restantes concentrados **entre os sinais de frutas** (locação/configuração
+  parecidas) — o gargalo agora é diversidade de sinalizantes, não código
+
+## ⚠️ Limitações conhecidas
+
+- Apenas 2 sinalizantes no treino por sinal — o modelo ainda memoriza pessoas;
+  mais sinalizantes (MINDS-Libras, gravações próprias) é a melhoria de maior impacto.
+- A validação durante o treino reusa o conjunto de teste (aceitável com poucos dados,
+  mas o ideal é um conjunto de validação separado quando o dataset crescer).
+- "OI" tem variantes regionais (aceno vs datilologia O-I); o dataset usa a variante
+  do V-LIBRASIL. Vídeos de variantes divergentes estão em `videos_baixados/_descartados/`.
 
 ---
 
 ## 🗺️ Próximos passos
 
-- [ ] Centralizar a lista de sinais e os hiperparâmetros em um único `config.py` / `labels.json`
-- [ ] Adicionar `requirements.txt`
-- [ ] Unificar a captura para 2 mãos (126 coords) em todas as fontes
-- [ ] Usar um conjunto de validação separado no treino (hoje a validação reusa o teste)
-- [ ] Versionar a versão web (frontend + backend) ou removê-la do repositório
+- [x] Centralizar a lista de sinais e os hiperparâmetros em `config.py` + `labels.json`
+- [x] Adicionar `requirements.txt`
+- [x] Unificar a captura para 2 mãos (126 coords) em todas as fontes
+- [x] 3+ vídeos originais por sinal (V-LIBRASIL) + split por grupo no treino
+- [x] Normalização por sequência (ordem das mãos, locação e movimento preservados)
+- [x] Augmentation que sobrevive à normalização (espelho, rotação, time-warp)
+- [ ] Mais sinalizantes por sinal (MINDS-Libras e/ou gravações próprias) — maior impacto
+- [ ] Usar um conjunto de validação separado do teste
+- [ ] Expandir o vocabulário de sinais

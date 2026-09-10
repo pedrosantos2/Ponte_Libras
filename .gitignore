@@ -1,0 +1,24 @@
+# Ambiente virtual
+venv/
+.venv/
+
+# Cache do Python
+__pycache__/
+*.pyc
+
+# Dados e modelos (pesados — não versionar)
+DATA/
+*.npy
+*.h5
+*.keras
+*.task
+
+# Vídeos baixados de datasets públicos (gigabytes — baixe de novo com os
+# scripts; só os poucos vídeos-fonte originais ficam versionados)
+videos_baixados/**/minds_*.mp4
+videos_baixados/**/vlibrasil_*.mp4
+videos_baixados/_descartados/
+videos_baixados/_teste_desconhecido/
+
+# Sistema
+.DS_Store
