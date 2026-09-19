@@ -22,3 +22,6 @@ videos_baixados/_teste_desconhecido/
 
 # Sistema
 .DS_Store
+
+# Dados do formato v2 (mãos + referência do corpo)
+DATA_V2/

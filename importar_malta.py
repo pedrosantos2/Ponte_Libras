@@ -19,13 +19,9 @@ from pathlib import Path
 
 import numpy as np
 import torch
-import mediapipe as mp
-from mediapipe.tasks import python as mp_python
-from mediapipe.tasks.python import vision
 
-from config import (
-    ACTIONS, DATA_PATH, FRAME_COUNT, COORD_SIZE, NUM_HANDS, ensure_hand_landmarker,
-)
+from config import ACTIONS, DATA_PATH, FRAME_COUNT, HAND_SIZE
+from extracao import Extrator
 
 # palavra do CSV (minúscula) -> classe do projeto
 PALAVRAS = {
@@ -59,33 +55,15 @@ PASTA_POR_DICT = {
 # (O subconjunto malta_libras_MINDS_subset NÃO é usado: no Hub seus arquivos
 #  são ponteiros LFS quebrados de 132 bytes, sem o conteúdo real.)
 
-# --- SETUP MEDIAPIPE ---
-base_options = mp_python.BaseOptions(model_asset_path=ensure_hand_landmarker())
-detector = vision.HandLandmarker.create_from_options(vision.HandLandmarkerOptions(
-    base_options=base_options,
-    running_mode=vision.RunningMode.IMAGE,
-    num_hands=NUM_HANDS,
-    min_hand_detection_confidence=0.4,  # vídeos 224x224, detecção mais difícil
-))
+# vídeos 224x224: detecção de mãos mais difícil, confiança menor
+extrator = Extrator(conf_mao=0.4)
 
 
 def tensor_para_sequencia(caminho_pt):
     """Frames (T, 3, 224, 224) -> coordenadas (FRAME_COUNT, COORD_SIZE)."""
     t = torch.load(caminho_pt, weights_only=False, map_location='cpu')
     frames = t.permute(0, 2, 3, 1).numpy()
-
-    seq = []
-    for f in frames:
-        img = np.ascontiguousarray(f, dtype=np.uint8)
-        res = detector.detect(mp.Image(image_format=mp.ImageFormat.SRGB, data=img))
-        coords = np.zeros(COORD_SIZE)
-        if res.hand_landmarks:
-            pts = []
-            for hand in res.hand_landmarks[:NUM_HANDS]:
-                for lm in hand:
-                    pts.extend([lm.x, lm.y, lm.z])
-            coords[:len(pts)] = pts
-        seq.append(coords)
+    seq = [extrator.extrair_rgb(f)[0] for f in frames]
 
     # recorte central / padding para FRAME_COUNT
     if len(seq) > FRAME_COUNT:
@@ -157,7 +135,7 @@ for r in rows:
 
     try:
         seq = tensor_para_sequencia(tmp_pt)
-        frames_com_mao = int(seq.any(axis=1).sum())
+        frames_com_mao = int(seq[:, :HAND_SIZE].any(axis=1).sum())
         if frames_com_mao < 5:
             print(f"⚠️ {nome_arquivo}: só {frames_com_mao} frames com mão — descartado")
             continue
@@ -167,7 +145,7 @@ for r in rows:
     except Exception as e:
         print(f"❌ Erro em {nome_arquivo}: {e}")
 
-detector.close()
+extrator.close()
 
 print("\n--- RESUMO POR CLASSE ---")
 por_classe = defaultdict(set)

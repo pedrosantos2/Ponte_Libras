@@ -1,14 +1,11 @@
 import cv2
-import mediapipe as mp
 import numpy as np
 import os
-from mediapipe.tasks import python
-from mediapipe.tasks.python import vision
 
 from config import (
-    ACTIONS, DATA_PATH, VIDEOS_PATH, FRAME_COUNT, COORD_SIZE, NUM_HANDS,
-    CLASSE_NEGATIVA, ensure_hand_landmarker,
+    ACTIONS, DATA_PATH, VIDEOS_PATH, FRAME_COUNT, CLASSE_NEGATIVA,
 )
+from extracao import Extrator
 
 # JANELAS DE TRANSIÇÃO: além do miolo do sinal, o começo e o fim do vídeo
 # (pessoa parada, mão subindo / mão descendo) viram amostras da classe OUTRO.
@@ -17,39 +14,18 @@ from config import (
 # começo e fim não contenham o sinal em si.
 TRANSICAO_MIN_FRAMES = 3 * FRAME_COUNT
 
-# --- SETUP MEDIAPIPE TASKS ---
-base_options = python.BaseOptions(model_asset_path=ensure_hand_landmarker())
-options = vision.HandLandmarkerOptions(
-    base_options=base_options,
-    running_mode=vision.RunningMode.IMAGE,
-    num_hands=NUM_HANDS,
-    min_hand_detection_confidence=0.5 # Menor para aceitar vídeos de internet
-)
-detector = vision.HandLandmarker.create_from_options(options)
+# Vídeos de internet: confiança menor na detecção das mãos
+extrator = Extrator(conf_mao=0.5)
+
 
 def extrair_coords_do_video(video_path):
     cap = cv2.VideoCapture(str(video_path))
     lista_frames = []
-    
     while cap.isOpened():
         ret, frame = cap.read()
         if not ret: break
-        
-        # Processamento
-        frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=frame_rgb)
-        results = detector.detect(mp_image)
-        
-        coords = np.zeros(COORD_SIZE)
-        if results.hand_landmarks:
-            all_pts = []
-            for hand in results.hand_landmarks[:NUM_HANDS]:
-                for lm in hand:
-                    all_pts.extend([lm.x, lm.y, lm.z])
-            coords[:len(all_pts)] = all_pts
-        
+        coords, _ = extrator.extrair(frame)
         lista_frames.append(coords)
-    
     cap.release()
     return lista_frames
 
@@ -120,5 +96,5 @@ for sign in ACTIONS:
         except Exception as e:
             print(f"❌ Erro ao processar {v_name}: {e}")
 
-detector.close()
+extrator.close()
 print("\n✅ Processamento concluído! O 'miolo' da ação foi extraído com sucesso.")

@@ -151,18 +151,33 @@ python tradutor_final.py
 Experimento central — mesma rede e pipeline, variando apenas a **diversidade de
 sinalizantes** por sinal (avaliação com pessoa inteira fora do treino):
 
-Estado atual (validação cruzada leave-one-signer-out, 12 sinais + classe OUTRO
-com 485 amostras — janelas de transição + 200 palavras fora do vocabulário):
-média **51,7%** — AMARELO 81%, BANHEIRO 78%, MEDO 74%, OI 73%, ACONTECER 63%,
-OUTRO 60%; classes com 3 sinalizantes (frutas, GOSTAR, BOM) entre 11% e 50%.
-No fluxo contínuo (`testar_tradutor.py`) os 5 sinais conhecidos testados são
-reconhecidos sem "caronas" e o repouso fica em silêncio; sinais inteiros fora
-do vocabulário ainda disparam ~3 glossas indevidas em 2 vídeos (era 6 antes do
-OUTRO ampliado) — limitação de *open-set* assumida.
+Estado atual — representação v2 (mãos + referência do corpo: a posição da mão
+é medida em relação ao nariz, em larguras de ombro; `extracao.py`). Validação
+cruzada leave-one-signer-out, 11 sinais + classe OUTRO: média **57,5%**
+(era 51,7% só com as mãos).
 
-Trade-off observado: um OUTRO grande melhora a rejeição de gestos desconhecidos
-mas rouba fronteira das classes com poucos dados — que só melhoram com mais
-sinalizantes.
+| Sinal | Só mãos | Com corpo |
+|---|---|---|
+| AMARELO | 81% | 81% |
+| OI | 73% | 75% |
+| BANHEIRO | 78% | 74% |
+| LARANJA | 50% | **71%** |
+| MEDO | 74% | 67% |
+| ABACAXI | 33% | **61%** |
+| BOM | 33% | **57%** |
+| ACONTECER | 63% | 52% |
+| GOSTAR | 31% | 48% |
+| MORANGO | 33% | 27% |
+| BANANA | 11% | 0% |
+| OUTRO | 60% | 77% |
+
+Com 3 folds e poucos sinalizantes, diferenças de ~10 pontos num sinal isolado
+estão dentro do ruído; o ganho consistente está nos sinais feitos perto do
+rosto (LARANJA, ABACAXI, BOM) e na classe OUTRO. No fluxo contínuo simulado a
+30 FPS (`testar_tradutor.py`): 5/5 sinais conhecidos sem "caronas", repouso em
+silêncio e 1 glossa indevida em 2 vídeos de sinais desconhecidos (eram 3).
+O reconhecedor trabalha por tempo (último 1 s reamostrado), então funciona em
+qualquer FPS de webcam.
 
 Histórico — rodada MALTA (12 classes, sem OUTRO), média **54,3%**:
 

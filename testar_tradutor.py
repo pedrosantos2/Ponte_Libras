@@ -11,14 +11,10 @@ Compara configurações de filtro para calibrar threshold/estabilidade.
 import json
 import numpy as np
 import cv2
-import mediapipe as mp
-from mediapipe.tasks import python as mp_python
-from mediapipe.tasks.python import vision
 from tensorflow.keras.models import load_model
 
-from config import (
-    COORD_SIZE, NUM_HANDS, MODELO_LSTM, LABELS_JSON, ensure_hand_landmarker,
-)
+from config import COORD_SIZE, HAND_SIZE, MODELO_LSTM, LABELS_JSON
+from extracao import Extrator
 from reconhecedor import ReconhecedorContinuo
 
 CASOS = [  # (vídeo, glossa esperada)
@@ -45,11 +41,7 @@ FRAMES_VAZIOS = 45
 model = load_model(MODELO_LSTM)
 ACTIONS = json.load(open(LABELS_JSON, encoding='utf-8'))
 
-base_options = mp_python.BaseOptions(model_asset_path=ensure_hand_landmarker())
-detector = vision.HandLandmarker.create_from_options(vision.HandLandmarkerOptions(
-    base_options=base_options, running_mode=vision.RunningMode.IMAGE,
-    num_hands=NUM_HANDS, min_hand_detection_confidence=0.7,
-    min_hand_presence_confidence=0.7, min_tracking_confidence=0.5))
+extrator = Extrator(conf_mao=0.7)
 
 
 def coords_do_video(caminho):
@@ -59,16 +51,7 @@ def coords_do_video(caminho):
         ok, img = cap.read()
         if not ok:
             break
-        rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        res = detector.detect(mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb))
-        c = np.zeros(COORD_SIZE)
-        if res.hand_landmarks:
-            pts = []
-            for hand in res.hand_landmarks[:NUM_HANDS]:
-                for lm in hand:
-                    pts.extend([lm.x, lm.y, lm.z])
-            c[:len(pts)] = pts
-        frames.append(c)
+        frames.append(extrator.extrair(img)[0])
     cap.release()
     return frames
 
@@ -80,13 +63,13 @@ for video, esperado in CASOS:
     # simula: sala vazia -> sinal -> sala vazia
     fluxo = [np.zeros(COORD_SIZE)] * FRAMES_VAZIOS + coords + [np.zeros(COORD_SIZE)] * FRAMES_VAZIOS
     fluxos.append((esperado, fluxo, len(coords)))
-    print(f"  {esperado:9s} {len(coords)} frames, {sum(1 for c in coords if c.any())} com mão")
+    print(f"  {esperado:9s} {len(coords)} frames, {sum(1 for c in coords if c[:HAND_SIZE].any())} com mão")
 
 # Caso extra: "parado" = a pose de descanso do início de um vídeo, repetida
 descanso = [c for c in fluxos[2][1][FRAMES_VAZIOS:FRAMES_VAZIOS + 8]]
 fluxo_parado = descanso * 12
 fluxos.append(("(nada)", fluxo_parado, len(fluxo_parado)))
-detector.close()
+extrator.close()
 
 for nome, passo, por_tempo in CENARIOS:
     print(f"\n===== {nome} =====")

@@ -15,7 +15,7 @@ import numpy as np
 import tensorflow as tf
 
 from config import (
-    FRAME_COUNT, THRESHOLD, CLASSE_NEGATIVA, normalizar_sequencia,
+    FRAME_COUNT, HAND_SIZE, THRESHOLD, CLASSE_NEGATIVA, normalizar_sequencia,
 )
 
 FPS_TREINO = 30.0
@@ -93,7 +93,7 @@ class ReconhecedorContinuo:
             return None   # ainda não há 1 segundo de histórico
 
         janela = self._janela(t)
-        if int(janela.any(axis=1).sum()) < self.min_frames_com_mao:
+        if int(janela[:, :HAND_SIZE].any(axis=1).sum()) < self.min_frames_com_mao:
             # Mãos fora da tela: zera o estado (permite repetir o mesmo
             # sinal depois e evita prever com a janela "vazia")
             self._resetar_candidata()
@@ -105,7 +105,12 @@ class ReconhecedorContinuo:
             self._resetar_candidata()
             return None
 
-        entrada = np.expand_dims(normalizar_sequencia(janela), axis=0).astype(np.float32)
+        normalizada = normalizar_sequencia(janela)
+        if normalizada is None:
+            # Corpo não detectado na janela: sem referência de locação
+            self._resetar_candidata()
+            return None
+        entrada = np.expand_dims(normalizada, axis=0).astype(np.float32)
         res = self._inferir(tf.constant(entrada)).numpy()[0]
         idx = int(np.argmax(res))
         self.conf_atual = float(res[idx])
