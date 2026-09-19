@@ -31,11 +31,14 @@ CASOS = [  # (vídeo, glossa esperada)
     ("videos_baixados/_teste_desconhecido/vlibrasil_art1_telefone.mp4", "(nada)"),
     ("videos_baixados/_teste_desconhecido/vlibrasil_art1_dinheiro.mp4", "(nada)"),
 ]
-CONFIGS = [  # (nome, threshold, estabilidade, min_frames, silencio, veto_outro)
-    ("sem veto", 0.95, 8, 15, 15, 1.1),
-    ("veto=0.30", 0.95, 8, 15, 15, 0.30),
-    ("veto=0.15", 0.95, 8, 15, 15, 0.15),
-    ("veto=0.05", 0.95, 8, 15, 15, 0.05),
+# Cenários: os vídeos são 30 FPS; "passo" descarta frames para simular uma
+# webcam lenta. "por_tempo=False" reproduz o comportamento ANTIGO (janela por
+# contagem de frames, que a 10 FPS cobre 3 segundos em vez de 1).
+CENARIOS = [  # (nome, passo, por_tempo)
+    ("30 FPS (condição do treino)", 1, True),
+    ("10 FPS — janela ANTIGA por contagem de frames", 3, False),
+    ("10 FPS — janela NOVA por tempo", 3, True),
+    ("15 FPS — janela NOVA por tempo", 2, True),
 ]
 FRAMES_VAZIOS = 45
 
@@ -85,15 +88,13 @@ fluxo_parado = descanso * 12
 fluxos.append(("(nada)", fluxo_parado, len(fluxo_parado)))
 detector.close()
 
-for nome, thr, estab, minf, sil, veto in CONFIGS:
-    print(f"\n===== CONFIG: {nome}  (threshold={thr}, estabilidade={estab}, min_frames={minf}, silencio={sil}, veto={veto}) =====")
+for nome, passo, por_tempo in CENARIOS:
+    print(f"\n===== {nome} =====")
     total_ok, total_extras = 0, 0
     for esperado, fluxo, _ in fluxos:
-        rec = ReconhecedorContinuo(model, ACTIONS, threshold=thr,
-                                   estabilidade=estab, min_frames_com_mao=minf,
-                                   silencio=sil, veto_outro=veto)
-        for c in fluxo:
-            rec.processar(c)
+        rec = ReconhecedorContinuo(model, ACTIONS)
+        for i in range(0, len(fluxo), passo):
+            rec.processar(fluxo[i], i / 30.0 if por_tempo else None)
         gl = rec.glossas
         if esperado == "(nada)":
             ok = len(gl) == 0
