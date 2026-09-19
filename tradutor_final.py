@@ -1,5 +1,6 @@
 import json
 import sys
+import time
 import cv2
 import mediapipe as mp
 import numpy as np
@@ -43,7 +44,9 @@ def chamar_gemma(glossas):
 base_options = python.BaseOptions(model_asset_path=ensure_hand_landmarker())
 options = vision.HandLandmarkerOptions(
     base_options=base_options,
-    running_mode=vision.RunningMode.IMAGE,
+    # Modo VIDEO: rastreia as mãos entre frames em vez de procurá-las do zero
+    # a cada imagem — bem mais rápido que o modo IMAGE na webcam
+    running_mode=vision.RunningMode.VIDEO,
     num_hands=NUM_HANDS,
     min_hand_detection_confidence=0.7,
     min_hand_presence_confidence=0.7,
@@ -55,9 +58,16 @@ hand_landmarker = vision.HandLandmarker.create_from_options(options)
 # A lógica de decisão mora em reconhecedor.py, compartilhada com os testes.
 rec = ReconhecedorContinuo(model_lstm, ACTIONS, estabilidade=8, min_frames_com_mao=15)
 
+# A detecção roda numa cópia reduzida da imagem (as coordenadas são
+# normalizadas de 0 a 1, então valem igual para a imagem cheia)
+LARGURA_DETECCAO = 640
+
 # --- VARIÁVEIS DE ESTADO ---
 cap = cv2.VideoCapture(0)
 traducao_final_tela = "Aguardando sinais..."
+t_inicio = time.monotonic()
+t_anterior = t_inicio
+fps_medio = 0.0
 
 print("\n🚀 SISTEMA RODANDO - LIBRAS-SC")
 print(f"Sinais conhecidos: {', '.join(ACTIONS)}")
@@ -69,10 +79,20 @@ while cap.isOpened():
 
     image = cv2.flip(image, 1)
     image_h, image_w = image.shape[:2]
-    image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
+    agora = time.monotonic()
+    t = agora - t_inicio
+    dt = agora - t_anterior
+    t_anterior = agora
+    if dt > 0:
+        fps_medio = 0.9 * fps_medio + 0.1 * (1.0 / dt) if fps_medio else 1.0 / dt
+
+    escala = LARGURA_DETECCAO / image_w
+    pequena = cv2.resize(image, (LARGURA_DETECCAO, int(image_h * escala))) if escala < 1 else image
+    image_rgb = cv2.cvtColor(pequena, cv2.COLOR_BGR2RGB)
 
     mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=image_rgb)
-    results = hand_landmarker.detect(mp_image)
+    results = hand_landmarker.detect_for_video(mp_image, int(t * 1000))
 
     current_coords = np.zeros(COORD_SIZE)
 
@@ -87,7 +107,9 @@ while cap.isOpened():
 
         current_coords[:len(all_pts)] = all_pts
 
-    rec.processar(current_coords)
+    # O horário do frame vai junto: a janela do reconhecedor é o último
+    # 1 segundo, qualquer que seja o FPS desta máquina
+    rec.processar(current_coords, t)
 
     # ==========================================
     # INTERFACE VISUAL (HUD)
@@ -112,6 +134,8 @@ while cap.isOpened():
     cv2.rectangle(image, (0, 0), (image_w, 50), (160, 40, 40), -1)
     cv2.putText(image, f"Gemma: {traducao_final_tela}", (15, 33),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
+    cv2.putText(image, f"{fps_medio:.0f} FPS", (image_w - 90, 33),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.6, (200, 200, 200), 1)
 
     cv2.imshow('Tradutor Final LIBRAS-SC', image)
 
