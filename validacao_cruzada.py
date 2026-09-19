@@ -14,7 +14,7 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import LSTM, Dense, Dropout
 
 from config import (
-    ACTIONS, DATA_PATH, FRAME_COUNT, COORD_SIZE,
+    ACTIONS, DATA_PATH, FRAME_COUNT, COORD_SIZE, FEATURE_SIZE,
     EPOCHS, BATCH_SIZE, normalizar_sequencia, grupo_origem,
 )
 
@@ -23,7 +23,7 @@ N_FOLDS = 3
 
 def montar_modelo():
     model = Sequential([
-        LSTM(64, return_sequences=True, input_shape=(FRAME_COUNT, COORD_SIZE)),
+        LSTM(64, return_sequences=True, input_shape=(FRAME_COUNT, FEATURE_SIZE)),
         LSTM(64, return_sequences=False),
         Dropout(0.3),
         Dense(32, activation='relu'),
@@ -46,7 +46,10 @@ for ci, action in enumerate(ACTIONS):
         seq = np.load(os.path.join(d, f))
         if seq.shape != (FRAME_COUNT, COORD_SIZE):
             continue
-        X.append(normalizar_sequencia(seq))
+        normalizada = normalizar_sequencia(seq)
+        if normalizada is None:
+            continue   # corpo não detectado: sem referência de locação
+        X.append(normalizada)
         labels.append(ci)
         grupos.append(grupo_origem(f))
 

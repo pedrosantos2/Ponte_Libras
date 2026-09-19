@@ -1,28 +1,16 @@
 import cv2
-import mediapipe as mp
 import numpy as np
 import time
-from mediapipe.tasks import python
-from mediapipe.tasks.python import vision
 
-from config import (
-    ACTIONS, DATA_PATH, FRAME_COUNT, COORD_SIZE, NUM_HANDS,
-    ensure_hand_landmarker,
-)
+from config import ACTIONS, DATA_PATH, FRAME_COUNT
+from extracao import Extrator
 
 # --- PREPARA AS PASTAS DO DATASET ---
 for sign in ACTIONS:
     (DATA_PATH / sign).mkdir(parents=True, exist_ok=True)
 
-# --- SETUP MEDIAPIPE ---
-base_options = python.BaseOptions(model_asset_path=ensure_hand_landmarker())
-options = vision.HandLandmarkerOptions(
-    base_options=base_options,
-    running_mode=vision.RunningMode.IMAGE,
-    num_hands=NUM_HANDS,  # 2 mãos, igual ao resto do pipeline (126 coords)
-    min_hand_detection_confidence=0.7,
-)
-hand_landmarker = vision.HandLandmarker.create_from_options(options)
+# --- EXTRATOR (mãos + referência do corpo, igual ao resto do pipeline) ---
+extrator = Extrator(conf_mao=0.7)
 
 # --- VARIÁVEIS DE ESTADO ---
 cap = cv2.VideoCapture(0)
@@ -41,24 +29,16 @@ while cap.isOpened():
     success, image = cap.read()
     if not success: break
 
-    image = cv2.flip(image, 1)
     image_h, image_w = image.shape[:2]
-    image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=image_rgb)
-    results = hand_landmarker.detect(mp_image)
+    # As coordenadas saem da imagem ORIGINAL (mesma orientação dos vídeos de
+    # treino); o espelho é só para a tela ficar natural para quem sinaliza
+    current_frame_landmarks, maos = extrator.extrair(image)
+    image = cv2.flip(image, 1)
 
-    # Mesmo sem detecção, precisamos de zeros para manter o shape fixo da rede
-    current_frame_landmarks = np.zeros(COORD_SIZE)
-
-    if results.hand_landmarks:
-        all_pts = []
-        for hand_landmarks in results.hand_landmarks[:NUM_HANDS]:
-            for lm in hand_landmarks:
-                all_pts.extend([lm.x, lm.y, lm.z])
-                # Desenha na tela para feedback
-                x_px, y_px = int(lm.x * image_w), int(lm.y * image_h)
-                cv2.circle(image, (x_px, y_px), 3, (0, 255, 0), -1)
-        current_frame_landmarks[:len(all_pts)] = all_pts
+    # Desenha na tela para feedback
+    for mao in maos:
+        for lm in mao:
+            cv2.circle(image, (int((1 - lm.x) * image_w), int(lm.y * image_h)), 3, (0, 255, 0), -1)
 
     # --- LÓGICA DE GRAVAÇÃO ---
     if is_recording:
@@ -94,5 +74,5 @@ while cap.isOpened():
         is_recording = True
 
 cap.release()
-hand_landmarker.close()
+extrator.close()
 cv2.destroyAllWindows()

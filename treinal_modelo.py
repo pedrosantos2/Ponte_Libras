@@ -9,7 +9,7 @@ from tensorflow.keras.layers import LSTM, Dense, Dropout
 import tensorflow as tf
 
 from config import (
-    ACTIONS, DATA_PATH, FRAME_COUNT, COORD_SIZE,
+    ACTIONS, DATA_PATH, FRAME_COUNT, COORD_SIZE, FEATURE_SIZE,
     EPOCHS, BATCH_SIZE, MODELO_LSTM, LABELS_JSON,
     normalizar_sequencia, grupo_origem,
 )
@@ -19,6 +19,7 @@ LABEL_MAP = {label: num for num, label in enumerate(ACTIONS)}
 
 
 sequences, labels, grupos = [], [], []
+sem_corpo = 0
 
 print("--- ANALISANDO DATASET ---")
 for action in ACTIONS:
@@ -36,11 +37,18 @@ for action in ACTIONS:
         if res.shape == EXPECTED_SHAPE:
             # Normaliza a sequência inteira: os .npy guardam coordenadas
             # cruas, a rede sempre vê a versão invariante à posição/escala
-            sequences.append(normalizar_sequencia(res))
+            normalizada = normalizar_sequencia(res)
+            if normalizada is None:
+                sem_corpo += 1   # corpo não detectado: sem referência de locação
+                continue
+            sequences.append(normalizada)
             labels.append(LABEL_MAP[action])
             grupos.append(grupo_origem(file))
         else:
             print(f"⚠️ Ignorando arquivo corrompido/antigo: {file} | Shape: {res.shape}")
+
+if sem_corpo:
+    print(f"⚠️ {sem_corpo} sequências descartadas: corpo não detectado")
 
 if len(sequences) == 0:
     print("❌ Erro: Nenhum dado válido encontrado. Verifique se gravou os sinais com 2 mãos.")
@@ -88,7 +96,7 @@ else:
 model = Sequential([
     # tanh (padrão) é mais estável que relu em LSTMs e habilita a
     # implementação otimizada (cuDNN) quando houver GPU
-    LSTM(64, return_sequences=True, input_shape=(FRAME_COUNT, COORD_SIZE)),
+    LSTM(64, return_sequences=True, input_shape=(FRAME_COUNT, FEATURE_SIZE)),
     LSTM(64, return_sequences=False),
 
     Dropout(0.3),

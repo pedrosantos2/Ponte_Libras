@@ -2,19 +2,14 @@ import json
 import sys
 import time
 import cv2
-import mediapipe as mp
-import numpy as np
 import requests
 from pathlib import Path
 from tensorflow.keras.models import load_model
-from mediapipe.tasks import python
-from mediapipe.tasks.python import vision
 
 from config import (
-    COORD_SIZE, NUM_HANDS, THRESHOLD,
-    MODELO_LSTM, LABELS_JSON, OLLAMA_URL, OLLAMA_MODEL,
-    ensure_hand_landmarker,
+    THRESHOLD, MODELO_LSTM, LABELS_JSON, OLLAMA_URL, OLLAMA_MODEL,
 )
+from extracao import Extrator
 from reconhecedor import ReconhecedorContinuo
 
 # --- CARREGA O MODELO E AS CLASSES DO TREINO ---
@@ -40,27 +35,14 @@ def chamar_gemma(glossas):
     except Exception as e:
         return f"Erro: {e}"
 
-# --- SETUP MEDIAPIPE ---
-base_options = python.BaseOptions(model_asset_path=ensure_hand_landmarker())
-options = vision.HandLandmarkerOptions(
-    base_options=base_options,
-    # Modo VIDEO: rastreia as mãos entre frames em vez de procurá-las do zero
-    # a cada imagem — bem mais rápido que o modo IMAGE na webcam
-    running_mode=vision.RunningMode.VIDEO,
-    num_hands=NUM_HANDS,
-    min_hand_detection_confidence=0.7,
-    min_hand_presence_confidence=0.7,
-    min_tracking_confidence=0.5,
-)
-hand_landmarker = vision.HandLandmarker.create_from_options(options)
+# --- EXTRATOR (mãos + referência do corpo) ---
+# Modo vídeo: rastreia as mãos entre frames. A pose roda a cada 3 frames
+# (o tronco quase não se move) para não derrubar o FPS.
+extrator = Extrator(modo_video=True, conf_mao=0.7, pose_cada=3)
 
 # --- RECONHECEDOR CONTÍNUO (filtros contra falsos positivos) ---
 # A lógica de decisão mora em reconhecedor.py, compartilhada com os testes.
 rec = ReconhecedorContinuo(model_lstm, ACTIONS, estabilidade=8, min_frames_com_mao=15)
-
-# A detecção roda numa cópia reduzida da imagem (as coordenadas são
-# normalizadas de 0 a 1, então valem igual para a imagem cheia)
-LARGURA_DETECCAO = 640
 
 # --- VARIÁVEIS DE ESTADO ---
 cap = cv2.VideoCapture(0)
@@ -77,7 +59,6 @@ while cap.isOpened():
     success, image = cap.read()
     if not success: break
 
-    image = cv2.flip(image, 1)
     image_h, image_w = image.shape[:2]
 
     agora = time.monotonic()
@@ -87,25 +68,15 @@ while cap.isOpened():
     if dt > 0:
         fps_medio = 0.9 * fps_medio + 0.1 * (1.0 / dt) if fps_medio else 1.0 / dt
 
-    escala = LARGURA_DETECCAO / image_w
-    pequena = cv2.resize(image, (LARGURA_DETECCAO, int(image_h * escala))) if escala < 1 else image
-    image_rgb = cv2.cvtColor(pequena, cv2.COLOR_BGR2RGB)
+    # As coordenadas saem da imagem ORIGINAL (mesma orientação dos vídeos de
+    # treino); o espelho é só para a tela ficar natural para quem sinaliza
+    current_coords, maos = extrator.extrair(image, int(t * 1000))
+    image = cv2.flip(image, 1)
 
-    mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=image_rgb)
-    results = hand_landmarker.detect_for_video(mp_image, int(t * 1000))
-
-    current_coords = np.zeros(COORD_SIZE)
-
-    if results.hand_landmarks:
-        all_pts = []
-        for hand_landmarks in results.hand_landmarks[:NUM_HANDS]:
-            for lm in hand_landmarks:
-                all_pts.extend([lm.x, lm.y, lm.z])
-                # Feedback visual dos pontos
-                x_px, y_px = int(lm.x * image_w), int(lm.y * image_h)
-                cv2.circle(image, (x_px, y_px), 3, (0, 255, 0), -1)
-
-        current_coords[:len(all_pts)] = all_pts
+    # Feedback visual dos pontos
+    for mao in maos:
+        for lm in mao:
+            cv2.circle(image, (int((1 - lm.x) * image_w), int(lm.y * image_h)), 3, (0, 255, 0), -1)
 
     # O horário do frame vai junto: a janela do reconhecedor é o último
     # 1 segundo, qualquer que seja o FPS desta máquina
@@ -161,5 +132,5 @@ while cap.isOpened():
         rec.limpar()
 
 cap.release()
-hand_landmarker.close()
+extrator.close()
 cv2.destroyAllWindows()
