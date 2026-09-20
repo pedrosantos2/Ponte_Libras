@@ -63,7 +63,7 @@ while cap.isOpened():
     cv2.putText(image, f"SINAL ATUAL: {ACTIONS[current_sign_idx]}", (50, image_h - 30),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
 
-    cv2.imshow('Coletor LIBRAS-SC', image)
+    cv2.imshow('Ponte Libras - Coletor', image)
 
     key = cv2.waitKey(1) & 0xFF
     if key == ord('q'): break

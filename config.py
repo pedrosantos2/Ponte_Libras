@@ -1,5 +1,5 @@
 """
-Configuração central do projeto Tradutor LIBRAS-SC.
+Configuração central do projeto Ponte Libras.
 
 Todos os scripts importam daqui. Se você adicionar um sinal novo,
 mude APENAS a lista ACTIONS abaixo — o resto do pipeline acompanha.
@@ -49,7 +49,7 @@ BATCH_SIZE = 8
 # --- INFERÊNCIA ---
 THRESHOLD = 0.95        # confiança mínima para aceitar uma glossa
 OLLAMA_URL = "http://localhost:11434/api/generate"
-OLLAMA_MODEL = "tradutor-sc"
+OLLAMA_MODEL = "ponte-libras"
 
 # --- AGRUPAMENTO PARA O SPLIT TREINO/TESTE ---
 import re as _re

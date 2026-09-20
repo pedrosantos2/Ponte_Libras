@@ -49,7 +49,7 @@ def aplicar_augment(dados_originais):
 
     return dados
 
-print("🧬 Iniciando Expansão do Dataset para LIBRAS-SC...")
+print("🧬 Iniciando Expansão do Dataset do Ponte Libras...")
 
 for action in ACTIONS:
     pasta_acao = DATA_PATH / action
