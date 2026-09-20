@@ -4,131 +4,162 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Ponte Libras — reconhecimento de Libras pela webcam</title>
-<meta name="description" content="Ponte Libras é um sistema de código aberto que reconhece sinais da Língua Brasileira de Sinais pela webcam e os transforma em frases em português. Protótipo em desenvolvimento.">
+<meta name="description" content="Ponte Libras é um sistema de código aberto que reconhece sinais da Língua Brasileira de Sinais pela webcam e os transforma em frases em português. Protótipo de TCC em Engenharia de Software.">
 <meta property="og:title" content="Ponte Libras">
-<meta property="og:description" content="Uma ponte entre quem sinaliza e quem ouve. Reconhecimento de Libras pela webcam, de código aberto e sem depender de internet.">
+<meta property="og:description" content="Uma ponte entre quem sinaliza e quem ouve. Reconhecimento de Libras pela webcam, de código aberto, sem depender de internet.">
 <meta property="og:type" content="website">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤟</text></svg>">
+<meta name="theme-color" content="#14110f">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
 <style>
   :root {
-    --tinta: #12263a;
-    --tinta-suave: #3d5166;
-    --fundo: #fbf8f1;
-    --papel: #ffffff;
-    --azul: #0b5d6b;
-    --azul-escuro: #07414b;
-    --sol: #f4b63f;
-    --sol-claro: #fdf0d0;
-    --linha: #e4dccb;
-    --raio: 18px;
+    --papel: #efebe2;
+    --papel-2: #e7e2d7;
+    --tinta: #14110f;
+    --tinta-2: #5a524a;
+    --linha: #cdc5b6;
+    --acento: #9e3319;
+    --escuro: #14110f;
+    --claro: #f4f1e8;
   }
   * { box-sizing: border-box; }
-  html { scroll-behavior: smooth; }
+  html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
   @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
   body {
-    margin: 0; background: var(--fundo); color: var(--tinta);
-    font: 400 17px/1.65 Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+    margin: 0;
+    background: var(--papel);
+    color: var(--tinta);
+    font: 400 17px/1.55 Archivo, system-ui, -apple-system, sans-serif;
     -webkit-font-smoothing: antialiased;
   }
-  h1, h2, h3 { font-family: "Bricolage Grotesque", Inter, system-ui, sans-serif; line-height: 1.12; margin: 0; letter-spacing: -0.01em; }
-  h1 { font-size: clamp(2.3rem, 6vw, 4.1rem); font-weight: 700; }
-  h2 { font-size: clamp(1.7rem, 3.6vw, 2.5rem); font-weight: 700; }
-  h3 { font-size: 1.2rem; font-weight: 700; }
-  p { margin: 0 0 1em; }
-  a { color: var(--azul); text-underline-offset: 3px; }
-  a:focus-visible, button:focus-visible { outline: 3px solid var(--sol); outline-offset: 3px; border-radius: 6px; }
-  .pular { position: absolute; left: -999px; top: 8px; background: var(--tinta); color: #fff; padding: 10px 16px; border-radius: 8px; z-index: 10; }
-  .pular:focus { left: 8px; }
-  .caixa { width: min(1080px, 100% - 40px); margin-inline: auto; }
 
-  header.topo { position: sticky; top: 0; z-index: 5; background: rgba(251, 248, 241, .92); backdrop-filter: blur(8px); border-bottom: 1px solid var(--linha); }
-  .topo .caixa { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 0; }
-  .marca { display: flex; align-items: center; gap: 10px; font: 700 1.2rem "Bricolage Grotesque", sans-serif; color: var(--tinta); text-decoration: none; }
-  .marca svg { width: 34px; height: 34px; }
-  nav ul { display: flex; gap: 22px; list-style: none; margin: 0; padding: 0; flex-wrap: wrap; }
-  nav a { color: var(--tinta-suave); text-decoration: none; font-weight: 500; font-size: .95rem; }
-  nav a:hover { color: var(--azul); text-decoration: underline; }
-  @media (max-width: 720px) { nav { display: none; } }
+  h1, h2, h3 { margin: 0; font-weight: 600; letter-spacing: -0.035em; line-height: 0.98; }
+  h1 { font-size: clamp(2.9rem, 9.5vw, 7rem); }
+  h2 { font-size: clamp(2rem, 4.6vw, 3.4rem); }
+  h3 { font-size: 1.15rem; letter-spacing: -0.02em; line-height: 1.25; }
+  p { margin: 0 0 1.1em; }
+  p:last-child { margin-bottom: 0; }
 
-  .hero { padding: clamp(48px, 9vw, 110px) 0 clamp(36px, 6vw, 70px); }
-  .hero .caixa { display: grid; grid-template-columns: 1.15fr .85fr; gap: 48px; align-items: center; }
-  @media (max-width: 860px) { .hero .caixa { grid-template-columns: 1fr; } }
-  .selo { display: inline-flex; align-items: center; gap: 8px; background: var(--sol-claro); border: 1px solid #f0d48f; color: #6b4a00; padding: 6px 14px; border-radius: 999px; font-size: .88rem; font-weight: 600; margin-bottom: 22px; }
-  .selo::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--sol); }
-  .hero h1 em { font-style: normal; color: var(--azul); }
-  .hero p.lead { font-size: 1.2rem; color: var(--tinta-suave); margin: 22px 0 30px; max-width: 34em; }
-  .botoes { display: flex; gap: 12px; flex-wrap: wrap; }
-  .botao { display: inline-block; padding: 14px 24px; border-radius: 12px; font-weight: 600; text-decoration: none; border: 2px solid var(--azul); }
-  .botao.cheio { background: var(--azul); color: #fff; }
-  .botao.cheio:hover { background: var(--azul-escuro); border-color: var(--azul-escuro); }
-  .botao.vazado { color: var(--azul); background: transparent; }
-  .botao.vazado:hover { background: #e6f1f2; }
-  .ilustra { background: var(--papel); border: 1px solid var(--linha); border-radius: 28px; padding: 26px; box-shadow: 0 18px 50px -28px rgba(18, 38, 58, .45); }
-  .ilustra svg { width: 100%; height: auto; display: block; }
+  a { color: var(--acento); text-decoration: none; border-bottom: 1px solid currentColor; padding-bottom: 1px; }
+  a:hover { color: var(--tinta); }
+  a:focus-visible, button:focus-visible { outline: 2px solid var(--acento); outline-offset: 4px; }
 
-  section { padding: clamp(48px, 7vw, 88px) 0; }
-  section.faixa { background: var(--papel); border-block: 1px solid var(--linha); }
-  .abre { max-width: 44em; margin-bottom: 36px; }
-  .abre p { color: var(--tinta-suave); font-size: 1.08rem; margin-top: 14px; }
-  .olho { text-transform: uppercase; letter-spacing: .12em; font-size: .8rem; font-weight: 600; color: var(--azul); margin-bottom: 10px; display: block; }
+  .mono { font-family: "IBM Plex Mono", ui-monospace, monospace; text-transform: uppercase; letter-spacing: 0.11em; font-size: 0.72rem; font-weight: 500; }
 
-  .passos { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; counter-reset: passo; list-style: none; padding: 0; margin: 0; }
-  @media (max-width: 900px) { .passos { grid-template-columns: repeat(2, 1fr); } }
-  @media (max-width: 520px) { .passos { grid-template-columns: 1fr; } }
-  .passos li { background: var(--fundo); border: 1px solid var(--linha); border-radius: var(--raio); padding: 24px 22px; counter-increment: passo; }
-  .passos li::before { content: counter(passo); display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: var(--tinta); color: #fff; font-weight: 700; margin-bottom: 14px; }
-  .passos p { color: var(--tinta-suave); font-size: .97rem; margin: 8px 0 0; }
+  .pular { position: absolute; left: -9999px; top: 0; background: var(--escuro); color: var(--claro); padding: 12px 18px; z-index: 20; }
+  .pular:focus { left: 12px; top: 12px; }
 
-  .grade { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
-  @media (max-width: 720px) { .grade { grid-template-columns: 1fr; } }
-  .cartao { background: var(--papel); border: 1px solid var(--linha); border-radius: var(--raio); padding: 26px; }
-  .faixa .cartao { background: var(--fundo); }
-  .cartao p { color: var(--tinta-suave); margin: 8px 0 0; font-size: .98rem; }
+  .caixa { width: min(1180px, 100% - 44px); margin-inline: auto; }
+  @media (max-width: 640px) { .caixa { width: calc(100% - 32px); } }
 
-  .numeros { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-bottom: 28px; }
-  @media (max-width: 720px) { .numeros { grid-template-columns: 1fr; } }
-  .numero { border-left: 4px solid var(--sol); padding: 6px 0 6px 18px; }
-  .numero strong { display: block; font: 700 2.6rem/1 "Bricolage Grotesque", sans-serif; color: var(--azul); }
-  .numero span { color: var(--tinta-suave); font-size: .96rem; }
-  .sinais { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; padding: 0; margin: 14px 0 0; }
-  .sinais li { background: var(--papel); border: 1px solid var(--linha); border-radius: 999px; padding: 6px 14px; font-weight: 600; font-size: .9rem; letter-spacing: .03em; }
-  .aviso { background: var(--sol-claro); border: 1px solid #f0d48f; border-radius: var(--raio); padding: 22px 24px; margin-top: 28px; }
-  .aviso p { margin: 0; color: #4d3a0a; }
+  /* ---------- barra superior ---------- */
+  .topo { position: sticky; top: 0; z-index: 10; background: var(--papel); border-bottom: 1px solid var(--linha); }
+  .topo .caixa { display: flex; align-items: center; justify-content: space-between; gap: 20px; height: 54px; }
+  .marca { display: inline-flex; align-items: center; gap: 9px; color: var(--tinta); border: 0; font-weight: 600; letter-spacing: -0.02em; font-size: 1.02rem; }
+  .marca svg { width: 22px; height: 22px; display: block; }
+  .topo nav ul { display: flex; gap: 26px; list-style: none; margin: 0; padding: 0; }
+  .topo nav a { color: var(--tinta-2); border: 0; }
+  .topo nav a:hover { color: var(--acento); }
+  @media (max-width: 860px) { .topo nav { display: none; } }
 
-  .lista { list-style: none; padding: 0; margin: 0; display: grid; gap: 14px; }
-  .lista li { display: grid; grid-template-columns: 28px 1fr; gap: 12px; align-items: start; }
-  .lista li::before { content: "→"; color: var(--azul); font-weight: 700; font-size: 1.2rem; line-height: 1.4; }
+  /* ---------- capa ---------- */
+  .capa { padding: clamp(46px, 8vw, 96px) 0 0; }
+  .capa h1 { max-width: 15ch; }
+  .capa h1 .grifo { color: var(--acento); }
+  .capa .resumo { max-width: 46ch; font-size: clamp(1.05rem, 1.6vw, 1.3rem); color: var(--tinta-2); margin: clamp(26px, 4vw, 40px) 0 0; }
+  .rolar { display: inline-flex; align-items: center; gap: 9px; color: var(--tinta-2); border: 0; margin-top: 30px; }
+  .rolar:hover { color: var(--acento); }
 
-  .chamada { background: var(--tinta); color: #fff; border-radius: 28px; padding: clamp(30px, 5vw, 56px); }
-  .chamada h2 { color: #fff; }
-  .chamada p { color: #c9d6e2; max-width: 40em; margin: 16px 0 26px; }
-  .chamada .botao.cheio { background: var(--sol); border-color: var(--sol); color: var(--tinta); }
-  .chamada .botao.cheio:hover { background: #ffc95e; border-color: #ffc95e; }
+  /* ficha técnica: rótulo à esquerda, valor à direita, filete entre linhas */
+  .ficha { margin: clamp(40px, 6vw, 72px) 0 0; border-top: 1px solid var(--linha); }
+  .ficha div { display: grid; grid-template-columns: 200px 1fr; gap: 24px; padding: 15px 0; border-bottom: 1px solid var(--linha); align-items: baseline; }
+  .ficha dt { color: var(--tinta-2); }
+  .ficha dd { margin: 0; font-weight: 500; }
+  @media (max-width: 620px) { .ficha div { grid-template-columns: 1fr; gap: 5px; } }
 
-  footer { padding: 40px 0 56px; color: var(--tinta-suave); font-size: .93rem; border-top: 1px solid var(--linha); }
-  footer .caixa { display: flex; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
-  footer p { margin: 0 0 6px; }
+  /* ---------- seções ---------- */
+  section { padding: clamp(60px, 9vw, 130px) 0; }
+  .secao { display: grid; grid-template-columns: 200px 1fr; gap: clamp(24px, 4vw, 56px); align-items: start; }
+  @media (max-width: 860px) { .secao { grid-template-columns: 1fr; gap: 22px; } }
+  .secao > .rotulo { color: var(--tinta-2); position: sticky; top: 78px; }
+  @media (max-width: 860px) { .secao > .rotulo { position: static; } }
+  .secao h2 { max-width: 20ch; }
+  .texto { max-width: 62ch; margin-top: 26px; font-size: 1.06rem; color: var(--tinta-2); }
+  .texto strong { color: var(--tinta); font-weight: 600; }
+
+  hr.filete { border: 0; border-top: 1px solid var(--linha); margin: 0; }
+
+  /* nota destacada: filete grosso à esquerda, sem cartão */
+  .nota { border-left: 3px solid var(--acento); padding: 4px 0 4px 20px; margin-top: 36px; max-width: 62ch; }
+  .nota p { color: var(--tinta-2); }
+  .nota strong { color: var(--tinta); }
+
+  /* etapas numeradas */
+  .etapas { list-style: none; margin: 34px 0 0; padding: 0; border-top: 1px solid var(--linha); }
+  .etapas li { display: grid; grid-template-columns: 54px 1fr; gap: 20px; padding: 22px 0; border-bottom: 1px solid var(--linha); align-items: baseline; }
+  .etapas .num { color: var(--acento); }
+  .etapas p { color: var(--tinta-2); margin: 7px 0 0; max-width: 54ch; font-size: 0.99rem; }
+
+  /* princípios */
+  .principios { margin: 40px 0 0; border-top: 1px solid var(--linha); }
+  .principios div { display: grid; grid-template-columns: 240px 1fr; gap: 24px; padding: 20px 0; border-bottom: 1px solid var(--linha); align-items: baseline; }
+  .principios dd { margin: 0; color: var(--tinta-2); max-width: 52ch; }
+  @media (max-width: 620px) { .principios div { grid-template-columns: 1fr; gap: 6px; } }
+
+  /* tabela de resultados */
+  .rolagem { overflow-x: auto; margin-top: 34px; }
+  table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; min-width: 420px; }
+  caption { text-align: left; color: var(--tinta-2); padding-bottom: 14px; }
+  th, td { text-align: left; padding: 11px 14px 11px 0; border-bottom: 1px solid var(--linha); }
+  thead th { border-bottom: 1px solid var(--tinta); color: var(--tinta-2); font-weight: 500; }
+  tbody th { font-weight: 500; letter-spacing: 0.02em; }
+  td.n { text-align: right; padding-right: 0; width: 1%; white-space: nowrap; }
+  .barra { display: block; height: 7px; background: var(--acento); min-width: 2px; }
+  td.b { width: 42%; padding-right: 18px; }
+  .b div { background: var(--papel-2); }
+
+  /* citação */
+  blockquote { margin: clamp(40px, 6vw, 64px) 0 0; padding: 0; max-width: 15em; }
+  blockquote p { font-family: "Instrument Serif", Georgia, serif; font-size: clamp(1.7rem, 3.6vw, 2.7rem); line-height: 1.1; letter-spacing: -0.02em; color: var(--tinta); }
+  blockquote p em { font-style: italic; color: var(--acento); }
+
+  .fonte { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--linha); color: var(--tinta-2); font-size: 0.93rem; max-width: 62ch; }
+
+  /* bloco invertido */
+  .invertido { background: var(--escuro); color: var(--claro); }
+  .invertido h2 { color: var(--claro); max-width: 18ch; }
+  .invertido .rotulo, .invertido .texto { color: #a49c92; }
+  .invertido .texto strong { color: var(--claro); }
+  .invertido a.acao { display: inline-flex; align-items: center; gap: 10px; margin-top: 32px; color: var(--claro); border: 1px solid #4a423a; padding: 13px 22px; }
+  .invertido a.acao:hover { background: var(--claro); color: var(--escuro); border-color: var(--claro); }
+  .invertido a.acao:focus-visible { outline-color: var(--claro); }
+
+  /* rodapé */
+  footer { border-top: 1px solid var(--linha); padding: 44px 0 60px; color: var(--tinta-2); }
+  footer .caixa { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; align-items: start; }
+  @media (max-width: 760px) { footer .caixa { grid-template-columns: 1fr; gap: 22px; } }
+  footer p { margin: 0 0 4px; font-size: 0.95rem; }
+  footer .titulo { color: var(--tinta); font-weight: 600; }
 </style>
 </head>
 <body>
-<a class="pular" href="#conteudo">Pular para o conteúdo</a>
+<a class="pular mono" href="#conteudo">Pular para o conteúdo</a>
 
 <header class="topo">
   <div class="caixa">
     <a class="marca" href="#" aria-label="Ponte Libras, início">
-      <svg viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="11" fill="#0b5d6b"/><path d="M6 27c4-11 8-16 14-16s10 5 14 16" fill="none" stroke="#f4b63f" stroke-width="3.2" stroke-linecap="round"/><path d="M6 27h28M13 27v-7M20 27V12M27 27v-7" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg>
+      <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="#14110f" stroke-width="1.6"><path d="M1 18h22M4 18c0-7 3.6-11 8-11s8 4 8 11" stroke="#9e3319"/><path d="M8 18v-6M12 18v-8M16 18v-6"/></svg>
       Ponte Libras
     </a>
-    <nav aria-label="Seções da página">
-      <ul>
-        <li><a href="#problema">O problema</a></li>
-        <li><a href="#como">Como funciona</a></li>
-        <li><a href="#estagio">Onde estamos</a></li>
-        <li><a href="#proximos">Próximos passos</a></li>
-        <li><a href="#participe">Participe</a></li>
+    <nav aria-label="Seções">
+      <ul class="mono">
+        <li><a href="#problema">01 Problema</a></li>
+        <li><a href="#funciona">02 Funcionamento</a></li>
+        <li><a href="#resultados">03 Resultados</a></li>
+        <li><a href="#proximos">04 Próximos passos</a></li>
+        <li><a href="#participe">05 Participe</a></li>
       </ul>
     </nav>
   </div>
@@ -136,132 +167,136 @@
 
 <main id="conteudo">
 
-<section class="hero" aria-labelledby="titulo">
+<section class="capa" aria-labelledby="titulo">
   <div class="caixa">
+    <h1 id="titulo">Uma ponte entre quem <span class="grifo">sinaliza</span> e quem <span class="grifo">ouve</span>.</h1>
+    <p class="resumo">Um sistema de código aberto que reconhece sinais da Língua Brasileira de Sinais pela webcam de um computador comum e os transforma em frases em português.</p>
+    <a class="rolar mono" href="#problema">↓ Role para ler</a>
+
+    <dl class="ficha">
+      <div><dt class="mono">Projeto</dt><dd>Ponte Libras</dd></div>
+      <div><dt class="mono">Natureza</dt><dd>Trabalho de Conclusão de Curso em Engenharia de Software</dd></div>
+      <div><dt class="mono">Instituição</dt><dd>Católica de Santa Catarina — Jaraguá do Sul, SC</dd></div>
+      <div><dt class="mono">Estágio</dt><dd>Protótipo funcional · 11 sinais reconhecidos</dd></div>
+      <div><dt class="mono">Código</dt><dd><a href="https://github.com/pedrosantos2/tradutor-libras">github.com/pedrosantos2/tradutor-libras</a></dd></div>
+    </dl>
+  </div>
+</section>
+
+<hr class="filete">
+
+<section id="problema" aria-labelledby="problema-t">
+  <div class="caixa secao">
+    <p class="rotulo mono">01 — O problema</p>
     <div>
-      <span class="selo">Protótipo em desenvolvimento</span>
-      <h1 id="titulo">Uma ponte entre quem <em>sinaliza</em> e quem <em>ouve</em>.</h1>
-      <p class="lead">O Ponte Libras reconhece sinais da Língua Brasileira de Sinais pela webcam de um computador comum e os transforma em frases em português. É de código aberto e funciona sem internet.</p>
-      <div class="botoes">
-        <a class="botao cheio" href="#como">Como funciona</a>
-        <a class="botao vazado" href="https://github.com/pedrosantos2/tradutor-libras">Ver o código no GitHub</a>
+      <h2 id="problema-t">A Libras é língua oficial do Brasil. Quase ninguém em volta sabe usá-la.</h2>
+      <div class="texto">
+        <p>Isso deixa pessoas surdas dependentes de um intérprete até para situações simples do dia a dia, inclusive dentro da escola. Quando o intérprete não está por perto, a conversa entre um estudante surdo e seus colegas ou professores muitas vezes simplesmente não acontece.</p>
+        <p>O Ponte Libras atua em duas frentes: <strong>apoiar conversas simples</strong> entre estudantes surdos e ouvintes, reduzindo a barreira inicial, e <strong>ajudar quem está aprendendo Libras</strong> a praticar os sinais com retorno imediato.</p>
+      </div>
+      <div class="nota">
+        <p><strong>O Ponte Libras não substitui intérpretes.</strong> A Libras é uma língua completa, com gramática própria, e a interpretação profissional continua insubstituível. A proposta é ser um apoio e despertar nos ouvintes o interesse pela língua.</p>
       </div>
     </div>
-    <div class="ilustra">
-      <svg viewBox="0 0 420 300" role="img" aria-labelledby="ilustra-t ilustra-d">
-        <title id="ilustra-t">Ilustração do Ponte Libras</title>
-        <desc id="ilustra-d">Uma ponte liga uma mão sinalizando, à esquerda, a um balão de fala com a palavra "Oi!", à direita.</desc>
-        <rect x="0" y="0" width="420" height="300" rx="18" fill="#fbf8f1"/>
-        <path d="M40 210c50-120 110-150 170-150s120 30 170 150" fill="none" stroke="#f4b63f" stroke-width="9" stroke-linecap="round"/>
-        <path d="M30 212h360" stroke="#12263a" stroke-width="8" stroke-linecap="round"/>
-        <g stroke="#12263a" stroke-width="4" stroke-linecap="round">
-          <path d="M90 212v-62M150 212v-112M210 212V62M270 212v-112M330 212v-62"/>
-        </g>
-        <path d="M30 236c30 16 60 16 90 0s60-16 90 0 60 16 90 0 60-16 90 0" fill="none" stroke="#0b5d6b" stroke-width="5" stroke-linecap="round" opacity=".55"/>
-        <path d="M30 262c30 16 60 16 90 0s60-16 90 0 60 16 90 0 60-16 90 0" fill="none" stroke="#0b5d6b" stroke-width="5" stroke-linecap="round" opacity=".3"/>
-        <circle cx="62" cy="62" r="40" fill="#0b5d6b"/>
-        <text x="62" y="78" font-size="44" text-anchor="middle">🤟</text>
-        <g>
-          <rect x="300" y="26" width="98" height="62" rx="16" fill="#12263a"/>
-          <path d="M326 88l-8 20 26-20z" fill="#12263a"/>
-          <text x="349" y="67" font-family="Inter, sans-serif" font-weight="600" font-size="26" fill="#fff" text-anchor="middle">Oi!</text>
-        </g>
-      </svg>
+  </div>
+</section>
+
+<hr class="filete">
+
+<section id="funciona" aria-labelledby="funciona-t">
+  <div class="caixa secao">
+    <p class="rotulo mono">02 — Como funciona</p>
+    <div>
+      <h2 id="funciona-t">Da câmera à frase em português, em quatro etapas.</h2>
+      <ol class="etapas">
+        <li><span class="num mono">01</span><div><h3>Câmera</h3><p>A pessoa sinaliza em frente à webcam de um notebook ou computador comum.</p></div></li>
+        <li><span class="num mono">02</span><div><h3>Mãos e corpo</h3><p>O sistema localiza as duas mãos, o rosto e os ombros, e acompanha o movimento por um segundo.</p></div></li>
+        <li><span class="num mono">03</span><div><h3>Rede neural</h3><p>Uma rede treinada com vídeos de vários sinalizantes identifica qual sinal foi feito.</p></div></li>
+        <li><span class="num mono">04</span><div><h3>Português</h3><p>Um modelo de linguagem reescreve a sequência de sinais como uma frase natural em português.</p></div></li>
+      </ol>
+
+      <dl class="principios">
+        <div><dt>Funciona sem internet</dt><dd>Todo o processamento acontece no próprio computador. Serve para escolas com conexão instável.</dd></div>
+        <div><dt>Privacidade</dt><dd>As imagens da câmera não são gravadas nem enviadas para nenhum servidor.</dd></div>
+        <div><dt>Computador comum</dt><dd>Desenvolvido e testado em um notebook com 8 GB de memória, sem placa de vídeo dedicada.</dd></div>
+        <div><dt>Código aberto</dt><dd>Todo o código está publicado para quem quiser estudar, usar ou melhorar.</dd></div>
+      </dl>
     </div>
   </div>
 </section>
 
-<section id="problema" class="faixa" aria-labelledby="problema-t">
-  <div class="caixa">
-    <div class="abre">
-      <span class="olho">O problema</span>
-      <h2 id="problema-t">A Libras é uma língua oficial do Brasil, mas poucos ouvintes sabem usá-la.</h2>
-      <p>Isso deixa pessoas surdas dependentes de um intérprete até para situações simples do dia a dia, inclusive dentro da escola. Quando o intérprete não está por perto, a conversa entre um estudante surdo e seus colegas ou professores muitas vezes simplesmente não acontece.</p>
-    </div>
-    <div class="grade">
-      <div class="cartao">
-        <h3>Para a comunicação</h3>
-        <p>Apoiar conversas simples entre estudantes surdos, colegas e professores ouvintes, reduzindo a barreira inicial.</p>
+<hr class="filete">
+
+<section id="resultados" aria-labelledby="resultados-t">
+  <div class="caixa secao">
+    <p class="rotulo mono">03 — Onde estamos</p>
+    <div>
+      <h2 id="resultados-t">Um protótipo, medido com honestidade.</h2>
+      <div class="texto">
+        <p>O sistema é sempre avaliado com <strong>pessoas que ele nunca viu durante o treino</strong>. É a medida mais dura, e a única que diz como ele se comporta com alguém novo na frente da câmera.</p>
       </div>
-      <div class="cartao">
-        <h3>Para o aprendizado</h3>
-        <p>Ajudar quem está aprendendo Libras a praticar os sinais e receber retorno imediato sobre o que fez.</p>
+
+      <div class="rolagem">
+        <table>
+          <caption class="mono">Acerto por sinal · pessoas nunca vistas</caption>
+          <thead>
+            <tr>
+              <th scope="col" class="mono">Sinal</th>
+              <th scope="col" class="mono">Pessoas no treino</th>
+              <th scope="col" class="mono" colspan="2">Acerto</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row">AMARELO</th><td>8</td><td class="b"><div><span class="barra" style="width:81%"></span></div></td><td class="n">81%</td></tr>
+            <tr><th scope="row">OI</th><td>8</td><td class="b"><div><span class="barra" style="width:75%"></span></div></td><td class="n">75%</td></tr>
+            <tr><th scope="row">BANHEIRO</th><td>8</td><td class="b"><div><span class="barra" style="width:74%"></span></div></td><td class="n">74%</td></tr>
+            <tr><th scope="row">LARANJA</th><td>9</td><td class="b"><div><span class="barra" style="width:71%"></span></div></td><td class="n">71%</td></tr>
+            <tr><th scope="row">MEDO</th><td>8</td><td class="b"><div><span class="barra" style="width:67%"></span></div></td><td class="n">67%</td></tr>
+            <tr><th scope="row">ABACAXI</th><td>3</td><td class="b"><div><span class="barra" style="width:61%"></span></div></td><td class="n">61%</td></tr>
+            <tr><th scope="row">BOM</th><td>7</td><td class="b"><div><span class="barra" style="width:57%"></span></div></td><td class="n">57%</td></tr>
+            <tr><th scope="row">ACONTECER</th><td>8</td><td class="b"><div><span class="barra" style="width:52%"></span></div></td><td class="n">52%</td></tr>
+            <tr><th scope="row">GOSTAR</th><td>4</td><td class="b"><div><span class="barra" style="width:48%"></span></div></td><td class="n">48%</td></tr>
+            <tr><th scope="row">MORANGO</th><td>3</td><td class="b"><div><span class="barra" style="width:27%"></span></div></td><td class="n">27%</td></tr>
+            <tr><th scope="row">BANANA</th><td>3</td><td class="b"><div><span class="barra" style="width:2%"></span></div></td><td class="n">0%</td></tr>
+          </tbody>
+        </table>
       </div>
-    </div>
-    <div class="aviso">
-      <p><strong>O Ponte Libras não substitui intérpretes.</strong> A Libras é uma língua completa, com gramática própria, e a interpretação profissional continua sendo insubstituível. A proposta é ser um apoio e despertar nos ouvintes o interesse pela língua.</p>
+
+      <blockquote>
+        <p>O que mais melhora o reconhecimento não é a tecnologia. É a <em>quantidade de pessoas diferentes</em> sinalizando nos dados.</p>
+      </blockquote>
+
+      <p class="fonte">Dados de treino: V-LIBRASIL (UFPE), MINDS-Libras (UFMG) e MALTA-LIBRAS, que reúne dicionários de Libras de instituições como UFSC, UFV e USP. Agradecemos aos grupos de pesquisa que tornaram esses vídeos públicos.</p>
     </div>
   </div>
 </section>
 
-<section id="como" aria-labelledby="como-t">
-  <div class="caixa">
-    <div class="abre">
-      <span class="olho">Como funciona</span>
-      <h2 id="como-t">Da câmera à frase em português, em quatro etapas.</h2>
-    </div>
-    <ol class="passos">
-      <li><h3>Câmera</h3><p>A pessoa sinaliza em frente à webcam de um notebook ou computador comum.</p></li>
-      <li><h3>Mãos e corpo</h3><p>O sistema localiza as duas mãos, o rosto e os ombros, e acompanha o movimento por um segundo.</p></li>
-      <li><h3>Rede neural</h3><p>Uma rede treinada com vídeos de vários sinalizantes identifica qual sinal foi feito.</p></li>
-      <li><h3>Português</h3><p>Um modelo de linguagem reescreve a sequência de sinais como uma frase natural em português.</p></li>
-    </ol>
-
-    <div class="grade" style="margin-top:28px">
-      <div class="cartao"><h3>Funciona sem internet</h3><p>Todo o processamento acontece no próprio computador. Serve para escolas com conexão instável.</p></div>
-      <div class="cartao"><h3>Privacidade</h3><p>As imagens da câmera não são gravadas nem enviadas para nenhum servidor.</p></div>
-      <div class="cartao"><h3>Computador comum</h3><p>Desenvolvido e testado em um notebook com 8 GB de memória, sem placa de vídeo dedicada.</p></div>
-      <div class="cartao"><h3>Código aberto</h3><p>Todo o código está publicado no GitHub para quem quiser estudar, usar ou melhorar.</p></div>
-    </div>
-  </div>
-</section>
-
-<section id="estagio" class="faixa" aria-labelledby="estagio-t">
-  <div class="caixa">
-    <div class="abre">
-      <span class="olho">Onde estamos</span>
-      <h2 id="estagio-t">Um protótipo, medido com honestidade.</h2>
-      <p>O sistema é sempre avaliado com pessoas que ele nunca viu durante o treino. É a medida mais dura, e a única que diz como ele se comporta com alguém novo na frente da câmera.</p>
-    </div>
-    <div class="numeros">
-      <div class="numero"><strong>11</strong><span>sinais reconhecidos hoje</span></div>
-      <div class="numero"><strong>~80%</strong><span>de acerto nos melhores sinais, com pessoas nunca vistas</span></div>
-      <div class="numero"><strong>3</strong><span>bases públicas de vídeos de universidades brasileiras</span></div>
-    </div>
-    <h3>Sinais do vocabulário atual</h3>
-    <ul class="sinais" aria-label="Sinais reconhecidos">
-      <li>OI</li><li>BOM</li><li>GOSTAR</li><li>MEDO</li><li>ACONTECER</li><li>BANHEIRO</li><li>AMARELO</li><li>LARANJA</li><li>ABACAXI</li><li>BANANA</li><li>MORANGO</li>
-    </ul>
-    <div class="aviso">
-      <p><strong>O que aprendemos até aqui:</strong> o que mais melhora o reconhecimento é a diversidade de pessoas sinalizando. Sinais gravados por oito pessoas chegam perto de 80% de acerto; sinais com apenas três pessoas ainda erram bastante. Trocar a tecnologia ajudou bem menos do que ter mais gente nos dados.</p>
-    </div>
-    <p style="margin-top:22px;color:var(--tinta-suave);font-size:.95rem">Dados de treino: V-LIBRASIL (UFPE), MINDS-Libras (UFMG) e MALTA-LIBRAS, que reúne dicionários de Libras de instituições como UFSC, UFV e USP. Agradecemos aos grupos de pesquisa que tornaram esses vídeos públicos.</p>
-  </div>
-</section>
+<hr class="filete">
 
 <section id="proximos" aria-labelledby="proximos-t">
-  <div class="caixa">
-    <div class="abre">
-      <span class="olho">Próximos passos</span>
+  <div class="caixa secao">
+    <p class="rotulo mono">04 — Próximos passos</p>
+    <div>
       <h2 id="proximos-t">O caminho passa pela comunidade surda.</h2>
+      <ol class="etapas">
+        <li><span class="num mono">01</span><div><h3>Gravar sinais com a comunidade surda e com estudantes de Libras</h3><p>Cada pessoa nova nos dados melhora o sistema para todas as outras.</p></div></li>
+        <li><span class="num mono">02</span><div><h3>Ampliar o vocabulário</h3><p>Priorizando os sinais mais usados em sala de aula, escolhidos junto com professores e intérpretes.</p></div></li>
+        <li><span class="num mono">03</span><div><h3>Testar em uma escola</h3><p>Com acompanhamento de quem vive a inclusão no dia a dia, para entender o que ajuda e o que atrapalha.</p></div></li>
+        <li><span class="num mono">04</span><div><h3>Facilitar a instalação</h3><p>Para que uma escola consiga usar sem precisar de alguém da área técnica.</p></div></li>
+      </ol>
     </div>
-    <ul class="lista">
-      <li><div><strong>Gravar sinais com a comunidade surda e com estudantes de Libras.</strong> Cada pessoa nova nos dados melhora o sistema para todas as outras.</div></li>
-      <li><div><strong>Ampliar o vocabulário</strong> para os sinais mais usados em sala de aula, escolhidos junto com professores e intérpretes.</div></li>
-      <li><div><strong>Testar em uma escola</strong>, com acompanhamento de quem vive a inclusão no dia a dia, para entender o que ajuda e o que atrapalha.</div></li>
-      <li><div><strong>Facilitar a instalação</strong>, para que uma escola consiga usar sem precisar de alguém da área técnica.</div></li>
-    </ul>
   </div>
 </section>
 
-<section id="participe" aria-labelledby="participe-t">
-  <div class="caixa">
-    <div class="chamada">
+<section id="participe" class="invertido" aria-labelledby="participe-t">
+  <div class="caixa secao">
+    <p class="rotulo mono">05 — Participe</p>
+    <div>
       <h2 id="participe-t">Você sinaliza, ensina ou interpreta Libras?</h2>
-      <p>O projeto precisa de pessoas para gravar sinais, indicar o vocabulário que faz falta na escola e dizer o que está errado. Se você é surdo, intérprete, professor ou estudante de Libras, sua participação vale mais do que qualquer linha de código.</p>
-      <div class="botoes">
-        <a class="botao cheio" href="https://github.com/pedrosantos2/tradutor-libras/issues">Falar com o projeto no GitHub</a>
+      <div class="texto">
+        <p>O projeto precisa de pessoas para gravar sinais, indicar o vocabulário que faz falta na escola e dizer o que está errado. Se você é surdo, intérprete, professor ou estudante de Libras, <strong>sua participação vale mais do que qualquer linha de código</strong>.</p>
       </div>
+      <a class="acao mono" href="https://github.com/pedrosantos2/tradutor-libras/issues">Falar com o projeto →</a>
     </div>
   </div>
 </section>
@@ -271,8 +306,12 @@
 <footer>
   <div class="caixa">
     <div>
-      <p><strong>Ponte Libras</strong></p>
-      <p>Trabalho de Conclusão de Curso em Engenharia de Software</p>
+      <p class="titulo">Ponte Libras</p>
+      <p>Reconhecimento de Libras pela webcam</p>
+    </div>
+    <div>
+      <p>Trabalho de Conclusão de Curso</p>
+      <p>Engenharia de Software</p>
       <p>Católica de Santa Catarina · Jaraguá do Sul, SC</p>
     </div>
     <div>
