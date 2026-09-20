@@ -1,4 +1,4 @@
-# 🤟 Tradutor LIBRAS-SC
+# 🤟 Ponte Libras
 
 Sistema de reconhecimento de **LIBRAS** (Língua Brasileira de Sinais) que usa visão computacional
 para detectar sinais a partir da webcam ou de vídeos e os traduz para **português fluído** com a
@@ -77,7 +77,7 @@ pip install -r requirements.txt
 O tradutor usa um modelo Gemma customizado definido no `Modelfile`. Crie-o uma vez:
 
 ```bash
-ollama create tradutor-sc -f Modelfile
+ollama create ponte-libras -f Modelfile
 ```
 
 > O `Modelfile` parte de `gemma3:4b`. O Ollama baixará o modelo base automaticamente na primeira vez.
@@ -142,7 +142,7 @@ python tradutor_final.py
 | Arquitetura       | 3× LSTM (64→128→64) + Dropout + Dense (64→32→softmax)     |
 | Treino            | Adam, `categorical_crossentropy`, 300 épocas, batch 8     |
 | Threshold         | 0.85 de confiança para aceitar uma glossa                 |
-| Tradução          | Ollama `tradutor-sc` (Gemma 3 4B), `temperature=0`        |
+| Tradução          | Ollama `ponte-libras` (Gemma 3 4B), `temperature=0`        |
 
 ---
 

@@ -51,7 +51,7 @@ t_inicio = time.monotonic()
 t_anterior = t_inicio
 fps_medio = 0.0
 
-print("\n🚀 SISTEMA RODANDO - LIBRAS-SC")
+print("\n🚀 PONTE LIBRAS - SISTEMA RODANDO")
 print(f"Sinais conhecidos: {', '.join(ACTIONS)}")
 print("Espaço: Traduzir (Gemma) | C: Limpar Tela | Q: Sair\n")
 
@@ -108,7 +108,7 @@ while cap.isOpened():
     cv2.putText(image, f"{fps_medio:.0f} FPS", (image_w - 90, 33),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.6, (200, 200, 200), 1)
 
-    cv2.imshow('Tradutor Final LIBRAS-SC', image)
+    cv2.imshow('Ponte Libras', image)
 
     # --- CONTROLES DO TECLADO ---
     key = cv2.waitKey(1) & 0xFF
@@ -122,7 +122,7 @@ while cap.isOpened():
         traducao_final_tela = "Processando IA... aguarde."
         cv2.putText(image, f"Gemma: {traducao_final_tela}", (15, 33),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
-        cv2.imshow('Tradutor Final LIBRAS-SC', image)
+        cv2.imshow('Ponte Libras', image)
         cv2.waitKey(1)  # Força atualização da tela
 
         frase = chamar_gemma(rec.glossas)
