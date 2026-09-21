@@ -25,3 +25,6 @@ videos_baixados/_teste_desconhecido/
 
 # Dados do formato v2 (mãos + referência do corpo)
 DATA_V2/
+
+# Vídeos gravados pelo tradutor (tecla R)
+gravacoes/

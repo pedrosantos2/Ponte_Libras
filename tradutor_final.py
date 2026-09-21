@@ -10,6 +10,7 @@ from config import (
     THRESHOLD, MODELO_LSTM, LABELS_JSON, OLLAMA_URL, OLLAMA_MODEL,
 )
 from extracao import Extrator
+from gravador import Gravador, desenhar_indicador
 from reconhecedor import ReconhecedorContinuo
 
 # --- CARREGA O MODELO E AS CLASSES DO TREINO ---
@@ -50,10 +51,20 @@ traducao_final_tela = "Aguardando sinais..."
 t_inicio = time.monotonic()
 t_anterior = t_inicio
 fps_medio = 0.0
+gravador = Gravador()
+
+
+def mostrar(quadro):
+    """Exibe o quadro; a marca de gravação vai numa cópia, fora do vídeo."""
+    if gravador.gravando:
+        quadro = quadro.copy()
+        desenhar_indicador(quadro, gravador.duracao)
+    cv2.imshow('Ponte Libras', quadro)
+
 
 print("\n🚀 PONTE LIBRAS - SISTEMA RODANDO")
 print(f"Sinais conhecidos: {', '.join(ACTIONS)}")
-print("Espaço: Traduzir (Gemma) | C: Limpar Tela | Q: Sair\n")
+print("Espaço: Traduzir (Gemma) | C: Limpar Tela | R: Gravar vídeo | Q: Sair\n")
 
 while cap.isOpened():
     success, image = cap.read()
@@ -108,29 +119,46 @@ while cap.isOpened():
     cv2.putText(image, f"{fps_medio:.0f} FPS", (image_w - 90, 33),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.6, (200, 200, 200), 1)
 
-    cv2.imshow('Ponte Libras', image)
+    # O quadro vai para o arquivo antes da marca de gravação ser desenhada
+    gravador.escrever(image)
+    mostrar(image)
 
     # --- CONTROLES DO TECLADO ---
     key = cv2.waitKey(1) & 0xFF
     if key == ord('q'):
         break
+    elif key == ord('r'):
+        if gravador.gravando:
+            caminho, duracao = gravador.parar()
+            print(f"⏹  Gravação salva: {caminho} ({duracao:.0f} s)")
+        else:
+            gravador.iniciar(image_w, image_h)
+            print(f"⏺  Gravando em {gravador.caminho} (R para parar)")
     elif key == ord('c'):
         rec.limpar()
         traducao_final_tela = "Aguardando sinais..."
     elif key == ord(' '):
         # Avisa na tela que está processando antes da chamada (que é lenta)
         traducao_final_tela = "Processando IA... aguarde."
+        cv2.rectangle(image, (0, 0), (image_w, 50), (160, 40, 40), -1)
         cv2.putText(image, f"Gemma: {traducao_final_tela}", (15, 33),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
-        cv2.imshow('Ponte Libras', image)
+        gravador.escrever(image)
+        mostrar(image)
         cv2.waitKey(1)  # Força atualização da tela
 
         frase = chamar_gemma(rec.glossas)
         traducao_final_tela = frase
+        # Enquanto o Gemma pensava o loop ficou parado: preenche esse tempo no
+        # vídeo com a tela de "Processando", como a pessoa viu
+        gravador.escrever(image)
 
         # Limpa o buffer de sinais para a próxima frase
         rec.limpar()
 
+if gravador.gravando:
+    caminho, duracao = gravador.parar()
+    print(f"⏹  Gravação salva: {caminho} ({duracao:.0f} s)")
 cap.release()
 extrator.close()
 cv2.destroyAllWindows()
