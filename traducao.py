@@ -16,10 +16,14 @@ from config import OLLAMA_MODEL, OLLAMA_URL
 MANTER_CARREGADO = "30m"
 
 
+def montar_prompt(glossas):
+    return f"Converta estas glossas de LIBRAS para português fluído: {' '.join(glossas)}"
+
+
 def chamar_gemma(glossas):
     if not glossas:
         return ""
-    prompt = f"Converta estas glossas de LIBRAS para português fluído: {' '.join(glossas)}"
+    prompt = montar_prompt(glossas)
     try:
         payload = {"model": OLLAMA_MODEL, "prompt": prompt, "stream": False,
                    "keep_alive": MANTER_CARREGADO}
