@@ -16,21 +16,21 @@ legendas escritas na tela, porque o vídeo precisa funcionar para quem é surdo.
 
 **Computador**
 - Feche os outros programas (o Mac tem 8 GB e o Gemma usa 3,3 GB).
-- Abra o tradutor e faça **uma tradução de aquecimento** antes de gravar. A
-  primeira chamada ao Gemma é a mais lenta, porque ele carrega o modelo na
-  memória.
+- Abra o tradutor e espere uns **15 segundos** antes de gravar. Ao abrir, ele
+  carrega o Gemma na memória em segundo plano (leva cerca de 10 segundos);
+  depois disso cada tradução sai em meio segundo.
 - Confira o FPS no canto superior direito: acima de 12 está bom.
 
 **Ensaio**
 - Assista aos vídeos de referência dos sinais e treine cada um algumas vezes:
 
   ```bash
-  open videos_baixados/oi/vlibrasil_art1_oi.mp4 videos_baixados/banheiro/minds_s02_r1_banheiro.mp4
+  open videos_baixados/oi/vlibrasil_art1_oi.mp4 videos_baixados/gostar/vlibrasil_art1_gostar.mp4 videos_baixados/amarelo/minds_s01_r1_amarelo.mp4
   ```
 
-- Faça a sequência inteira sem gravar, para ver se o Gemma produz uma frase
-  boa com as glossas escolhidas. Se a frase sair estranha, me avise antes de
-  gravar.
+- Faça a sequência inteira sem gravar. Testei as combinações no Gemma: OI,
+  GOSTAR, AMARELO vira "Oi, eu gosto de amarelo.", que é a melhor para o vídeo.
+  (OI, BANHEIRO virou "Oi, vá ao banheiro!", por isso saiu do roteiro.)
 - Teste dois ou três gestos que não são sinais (cena 5) e escolha um que o
   sistema ignore de forma consistente.
 
@@ -59,8 +59,8 @@ reconhecedor e evita que o movimento de transição vire uma glossa.
 |---|---|---|---|
 | 1 | 0–8 s | Fica parado, de frente para a câmera, mãos abaixadas. | Ponte Libras reconhece sinais de Libras pela webcam, num notebook comum e sem internet. |
 | 2 | 8–20 s | Faz **OI** (letras O e I, perto do rosto) e baixa as mãos. | Os pontos verdes são as mãos que o sistema enxerga. Ao reconhecer o sinal, a glossa OI aparece embaixo. |
-| 3 | 20–35 s | Faz **BANHEIRO** e baixa as mãos. | Cada sinal reconhecido entra na sequência de glossas, que é a forma escrita dos sinais. |
-| 4 | 35–55 s | Aperta **Espaço** e espera a frase aparecer na barra de cima. | Um modelo de linguagem, rodando no próprio computador, escreve a frase em português. |
+| 3 | 20–38 s | Faz **GOSTAR**, baixa as mãos, faz **AMARELO** e baixa as mãos. | Cada sinal reconhecido entra na sequência de glossas, que é a forma escrita dos sinais. |
+| 4 | 38–55 s | Aperta **Espaço**. A frase "Oi, eu gosto de amarelo." aparece na barra de cima. | Um modelo de linguagem, rodando no próprio computador, escreve a frase em português. |
 | 5 | 55–68 s | Aperta **C** para limpar e faz um gesto que não é sinal (o que você escolheu no ensaio). | Gestos que não fazem parte do vocabulário não viram tradução. |
 | 6 | 68–80 s | Tela final (eu monto na edição). | Protótipo de TCC em Engenharia de Software, Católica de Santa Catarina. Quer ajudar a melhorar o sistema? Grave sinais com a gente. + endereço do projeto |
 
@@ -72,9 +72,10 @@ que eu ajusto na edição.
 - **O sistema errou um sinal:** não pare. Um erro real, com uma legenda
   explicando, combina com o que o site diz sobre os resultados. Se preferir,
   usamos outro take.
-- **O Gemma demorou muito:** tudo bem. Eu encurto a espera na edição e coloco
-  uma legenda avisando que o tempo foi encurtado, para não dar impressão falsa
-  de velocidade.
+- **O Gemma demorou muito:** com o modelo já carregado a frase leva cerca de
+  meio segundo, então isso só deve acontecer se o Ollama tiver acabado de
+  abrir. Se acontecer, eu encurto a espera na edição e coloco uma legenda
+  avisando, para não dar impressão falsa de velocidade.
 - **Na cena 5 o sistema inventou uma glossa:** é uma limitação conhecida. Ou
   trocamos o gesto, ou mantemos com a legenda "Às vezes o sistema ainda
   confunde gestos desconhecidos com sinais. É uma das limitações em estudo."
