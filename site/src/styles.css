@@ -11,7 +11,6 @@
   --tinta-2: #37575c;         /* texto secundário */
   --branco: #ffffff;
   --gelo: #e3f5f6;            /* superfícies secundárias */
-  --medida: 64ch;
 }
 
 * { box-sizing: border-box; }
@@ -79,18 +78,21 @@ a:hover { text-decoration-thickness: 3px; }
 .camera figcaption { margin-top: 14px; font-size: 0.95rem; color: #0b3b43; max-width: 48ch; }
 
 /* ---------- seções ---------- */
+/* As seções usam uma coluna de leitura centralizada, mais estreita que o topo.
+   O texto fica alinhado à esquerda dentro dela: parágrafo centralizado é mais
+   difícil de ler. A largura da coluna já limita a linha a ~75 caracteres. */
 .secao { padding: clamp(64px, 9vw, 120px) 0; }
+.secao > .caixa { width: min(780px, 100% - 48px); }
+@media (max-width: 600px) { .secao > .caixa { width: calc(100% - 32px); } }
 .secao-gelo { background: var(--gelo); }
-.secao h2 { max-width: 22ch; }
-.texto { max-width: var(--medida); margin-top: 24px; font-size: 1.1rem; }
+.texto { margin-top: 24px; font-size: 1.1rem; }
 .texto p { color: var(--tinta-2); }
 .texto strong { color: var(--tinta); }
 
-.ressalva { max-width: var(--medida); margin-top: 36px; padding: 22px 26px; background: var(--gelo); border-radius: 14px; }
+.ressalva { margin-top: 36px; padding: 22px 26px; background: var(--gelo); border-radius: 14px; }
 .ressalva p { color: var(--tinta); }
 
-.etapas { list-style: none; margin: 44px 0 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 32px; counter-reset: etapa; }
-@media (max-width: 900px) { .etapas { grid-template-columns: repeat(2, 1fr); } }
+.etapas { list-style: none; margin: 44px 0 0; padding: 0; display: grid; grid-template-columns: repeat(2, 1fr); gap: 40px 48px; counter-reset: etapa; }
 @media (max-width: 520px) { .etapas { grid-template-columns: 1fr; } }
 .etapas li { counter-increment: etapa; }
 .etapas li::before { content: counter(etapa); display: block; font-size: 3.25rem; font-weight: 800; line-height: 1; color: var(--turquesa-forte); margin-bottom: 14px; }
@@ -98,13 +100,13 @@ a:hover { text-decoration-thickness: 3px; }
 
 .principios-bloco { margin-top: clamp(64px, 8vw, 96px); padding-top: clamp(40px, 5vw, 56px); border-top: 2px solid rgba(4, 38, 44, 0.12); }
 .subtitulo { font-size: clamp(1.35rem, 2.2vw, 1.7rem); font-weight: 800; letter-spacing: -0.01em; }
-.principios { margin: 28px 0 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 28px 56px; max-width: 920px; }
+.principios { margin: 28px 0 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 28px 48px; }
 @media (max-width: 720px) { .principios { grid-template-columns: 1fr; } }
 .principios dt { font-weight: 700; }
 .principios dd { margin: 6px 0 0; color: var(--tinta-2); }
 
 /* tabela */
-.rolagem { overflow-x: auto; margin-top: 40px; max-width: 820px; }
+.rolagem { overflow-x: auto; margin-top: 40px; }
 table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; min-width: 400px; }
 caption { text-align: left; font-weight: 700; padding-bottom: 12px; }
 th, td { text-align: left; padding: 10px 16px 10px 0; }
@@ -116,10 +118,10 @@ td.pessoas { color: var(--tinta-2); }
 td.trilho { width: 46%; }
 .trilho span { display: block; height: 10px; border-radius: 5px; background: var(--turquesa-forte); min-width: 4px; }
 
-.conclusao { margin-top: 48px; max-width: 30ch; font-size: clamp(1.5rem, 2.8vw, 2.1rem); font-weight: 700; line-height: 1.2; letter-spacing: -0.01em; }
-.fontes { margin-top: 36px; max-width: var(--medida); font-size: 0.95rem; color: var(--tinta-2); }
+.conclusao { margin-top: 48px; font-size: clamp(1.5rem, 2.8vw, 2.1rem); font-weight: 700; line-height: 1.2; letter-spacing: -0.01em; }
+.fontes { margin-top: 36px; font-size: 0.95rem; color: var(--tinta-2); }
 
-.passos { list-style: none; margin: 40px 0 0; padding: 0; max-width: var(--medida); display: grid; gap: 24px; }
+.passos { list-style: none; margin: 40px 0 0; padding: 0; display: grid; gap: 24px; }
 .passos li { padding-left: 22px; border-left: 3px solid var(--turquesa); }
 .passos p { color: var(--tinta-2); margin-top: 4px; }
 
