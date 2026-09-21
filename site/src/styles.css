@@ -96,7 +96,9 @@ a:hover { text-decoration-thickness: 3px; }
 .etapas li::before { content: counter(etapa); display: block; font-size: 3.25rem; font-weight: 800; line-height: 1; color: var(--turquesa-forte); margin-bottom: 14px; }
 .etapas p { color: var(--tinta-2); margin-top: 8px; }
 
-.principios { margin: 64px 0 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 28px 56px; max-width: 920px; }
+.principios-bloco { margin-top: clamp(64px, 8vw, 96px); padding-top: clamp(40px, 5vw, 56px); border-top: 2px solid rgba(4, 38, 44, 0.12); }
+.subtitulo { font-size: clamp(1.35rem, 2.2vw, 1.7rem); font-weight: 800; letter-spacing: -0.01em; }
+.principios { margin: 28px 0 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 28px 56px; max-width: 920px; }
 @media (max-width: 720px) { .principios { grid-template-columns: 1fr; } }
 .principios dt { font-weight: 700; }
 .principios dd { margin: 6px 0 0; color: var(--tinta-2); }

@@ -12,14 +12,17 @@ export function Funcionamento() {
           </li>
         ))}
       </ol>
-      <dl className="principios">
-        {principios.map((pr) => (
-          <div key={pr.titulo}>
-            <dt>{pr.titulo}</dt>
-            <dd>{pr.texto}</dd>
-          </div>
-        ))}
-      </dl>
+      <div className="principios-bloco">
+        <h3 className="subtitulo">Feito para funcionar na escola</h3>
+        <dl className="principios">
+          {principios.map((pr) => (
+            <div key={pr.titulo}>
+              <dt>{pr.titulo}</dt>
+              <dd>{pr.texto}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
     </Secao>
   )
 }
