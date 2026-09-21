@@ -1,21 +1,16 @@
-import { REPO_LABEL, REPO_URL } from '../data/conteudo'
+import { REPO_URL } from '../data/conteudo'
 
 export function Rodape() {
   return (
     <footer>
       <div className="caixa">
         <div>
-          <p className="titulo">Ponte Libras</p>
-          <p>Reconhecimento de Libras pela webcam</p>
-        </div>
-        <div>
-          <p>Trabalho de Conclusão de Curso</p>
-          <p>Engenharia de Software</p>
-          <p>Católica de Santa Catarina · Jaraguá do Sul, SC</p>
-        </div>
-        <div>
+          <p><strong>Ponte Libras</strong></p>
           <p>Desenvolvido por Pedro Santos</p>
-          <p><a href={REPO_URL}>{REPO_LABEL}</a></p>
+        </div>
+        <div>
+          <p>Engenharia de Software, Católica de Santa Catarina</p>
+          <p><a href={REPO_URL}>Código-fonte no GitHub</a></p>
         </div>
       </div>
     </footer>

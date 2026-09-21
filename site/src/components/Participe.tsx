@@ -3,15 +3,17 @@ import { Secao } from './Secao'
 
 export function Participe() {
   return (
-    <Secao id="participe" rotulo="05 — Participe" titulo="Você sinaliza, ensina ou interpreta Libras?" invertida>
+    <Secao id="participe" titulo="Você sinaliza, ensina ou interpreta Libras?" className="participe">
       <div className="texto">
         <p>
-          O projeto precisa de pessoas para gravar sinais, indicar o vocabulário que faz falta na escola e
-          dizer o que está errado. Se você é surdo, intérprete, professor ou estudante de Libras,{' '}
-          <strong>sua participação vale mais do que qualquer linha de código</strong>.
+          O projeto precisa de gente para gravar sinais, apontar o vocabulário que faz falta na escola e dizer
+          o que está errado. Se você é surdo, intérprete, professor ou estudante de Libras, a sua participação
+          é o que mais pode melhorar o sistema.
         </p>
       </div>
-      <a className="acao mono" href={`${REPO_URL}/issues`}>Falar com o projeto →</a>
+      <div className="botoes">
+        <a className="botao botao-cheio" href={`${REPO_URL}/issues`}>Deixar uma mensagem no GitHub</a>
+      </div>
     </Secao>
   )
 }
