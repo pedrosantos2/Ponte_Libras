@@ -158,7 +158,22 @@ python tradutor_final.py
 Experimento central — mesma rede e pipeline, variando apenas a **diversidade de
 sinalizantes** por sinal (avaliação com pessoa inteira fora do treino):
 
-Estado atual — representação v2 (mãos + referência do corpo: a posição da mão
+Estado atual (treino também com exemplos simulando a pessoa **sentada** perto
+da webcam de um notebook, `enquadramento.py`). Validação cruzada
+leave-one-signer-out, com a pessoa de teste em pé e sentada:
+
+| | Antes | Com exemplos sentados |
+|---|---|---|
+| Em pé | 59,0% | **65,9%** |
+| Sentado | 39,9% | **56,9%** |
+
+Sentada, a pessoa perde a mão que desce abaixo do peito, e os sinais com as
+duas mãos ou na altura do peito eram os que mais sofriam (ABACAXI e BANHEIRO
+caíam a 0%). ACONTECER, que usa uma mão na altura da cintura, continua o mais
+difícil nessa posição. Os números variam alguns pontos entre execuções, porque
+cada treino começa de pesos aleatórios.
+
+Histórico — representação v2 (mãos + referência do corpo: a posição da mão
 é medida em relação ao nariz, em larguras de ombro; `extracao.py`). Validação
 cruzada leave-one-signer-out, 11 sinais + classe OUTRO: média **57,5%**
 (era 51,7% só com as mãos).
