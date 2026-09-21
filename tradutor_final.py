@@ -36,6 +36,7 @@ rec = ReconhecedorContinuo(model_lstm, ACTIONS, estabilidade=8, min_frames_com_m
 # --- VARIÁVEIS DE ESTADO ---
 cap = cv2.VideoCapture(0)
 traducao_final_tela = ""
+aviso_tela = ""
 t_inicio = time.monotonic()
 t_anterior = t_inicio
 fps_medio = 0.0
@@ -83,9 +84,12 @@ while cap.isOpened():
     # 1 segundo, qualquer que seja o FPS desta máquina
     rec.processar(current_coords, t)
 
-    frase = tradutor.frase_pronta()
-    if frase is not None:
-        traducao_final_tela = frase
+    traducao = tradutor.frase_pronta()
+    if traducao is not None:
+        traducao_final_tela = traducao.frase
+        # Frase que não conferiu com os sinais: a tela mostra as glossas
+        aviso_tela = "" if traducao.confiavel or traducao.erro else \
+            "A frase gerada não conferiu com os sinais. Mostrando as glossas."
 
     interface.desenhar(image, EstadoTela(
         glossas=rec.glossas,
@@ -94,6 +98,7 @@ while cap.isOpened():
         progresso=rec.votos / rec.estabilidade,
         frase=traducao_final_tela,
         processando=tradutor.ocupado,
+        aviso=aviso_tela,
         fps=fps_medio,
     ))
 
@@ -116,9 +121,11 @@ while cap.isOpened():
         tradutor.descartar()
         rec.limpar()
         traducao_final_tela = ""
+        aviso_tela = ""
     elif key == ord(' ') and rec.glossas and not tradutor.ocupado:
         tradutor.pedir(rec.glossas)
         traducao_final_tela = ""
+        aviso_tela = ""
         # Limpa as glossas: a próxima frase já pode ser sinalizada enquanto
         # o Gemma escreve esta
         rec.limpar()

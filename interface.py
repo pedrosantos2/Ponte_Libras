@@ -45,6 +45,7 @@ class EstadoTela:
     progresso: float = 0.0     # 0 a 1: quanto falta para a glossa ser aceita
     frase: str = ""
     processando: bool = False
+    aviso: str = ""            # ex.: a frase não conferiu com os sinais
     fps: float = 0.0
 
 
@@ -204,7 +205,10 @@ class Interface:
                            (cx + w + round(10 * s)) // 2, round(cy + alto_chips / 2) // 2)
         else:
             self._barra = None
-        if not chips and not estado.candidata and not estado.frase and not estado.processando:
+        if not chips and not estado.candidata and estado.aviso:
+            d.text((pad, cy + alto_chips / 2), estado.aviso,
+                   font=self._fonte(500, tam_chip), fill=ALERTA, anchor="lm")
+        elif not chips and not estado.candidata and not estado.frase and not estado.processando:
             d.text((pad, cy + alto_chips / 2), "Faça um sinal em frente à câmera",
                    font=self._fonte(500, tam_chip), fill=APAGADO, anchor="lm")
 
@@ -259,7 +263,7 @@ class Interface:
 
         largura = W - 2 * margem
         chave = (tuple(estado.glossas), estado.candidata, estado.frase, estado.processando,
-                 largura, round(s, 3))
+                 estado.aviso, largura, round(s, 3))
         if chave != self._painel_chave:
             self._painel = self._montar_painel(estado, largura, s)
             self._painel_chave = chave
