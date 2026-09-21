@@ -63,14 +63,3 @@ class Gravador:
         self._writer = None
         return self.caminho, duracao
 
-
-def desenhar_indicador(imagem, segundos):
-    """Marca de gravação na tela. É desenhada DEPOIS de escrever o quadro no
-    arquivo, então aparece só para quem está gravando, não no vídeo."""
-    h, w = imagem.shape[:2]
-    texto = f"GRAVANDO {int(segundos) // 60:02d}:{int(segundos) % 60:02d}"
-    (tw, th), _ = cv2.getTextSize(texto, cv2.FONT_HERSHEY_SIMPLEX, 0.6, 2)
-    x, y = w - tw - 52, 62
-    cv2.rectangle(imagem, (x - 12, y), (w - 12, y + th + 18), (20, 20, 20), -1)
-    cv2.circle(imagem, (x + 4, y + (th + 18) // 2), 7, (40, 40, 230), -1)
-    cv2.putText(imagem, texto, (x + 20, y + th + 8), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)

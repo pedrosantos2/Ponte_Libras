@@ -5,11 +5,10 @@ import cv2
 from pathlib import Path
 from tensorflow.keras.models import load_model
 
-from config import (
-    THRESHOLD, MODELO_LSTM, LABELS_JSON,
-)
+from config import MODELO_LSTM, LABELS_JSON
 from extracao import Extrator
-from gravador import Gravador, desenhar_indicador
+from gravador import Gravador
+from interface import EstadoTela, Interface
 from reconhecedor import ReconhecedorContinuo
 from traducao import TradutorEmSegundoPlano, pre_carregar
 
@@ -36,11 +35,13 @@ rec = ReconhecedorContinuo(model_lstm, ACTIONS, estabilidade=8, min_frames_com_m
 
 # --- VARIÁVEIS DE ESTADO ---
 cap = cv2.VideoCapture(0)
-traducao_final_tela = "Aguardando sinais..."
+traducao_final_tela = ""
 t_inicio = time.monotonic()
 t_anterior = t_inicio
 fps_medio = 0.0
 gravador = Gravador()
+interface = Interface()
+cv2.namedWindow('Ponte Libras', cv2.WINDOW_NORMAL)
 # A tradução roda fora do loop da câmera, que não trava enquanto o Gemma pensa
 tradutor = TradutorEmSegundoPlano()
 pre_carregar()
@@ -50,7 +51,7 @@ def mostrar(quadro):
     """Exibe o quadro; a marca de gravação vai numa cópia, fora do vídeo."""
     if gravador.gravando:
         quadro = quadro.copy()
-        desenhar_indicador(quadro, gravador.duracao)
+        interface.desenhar_gravacao(quadro, gravador.duracao)
     cv2.imshow('Ponte Libras', quadro)
 
 
@@ -76,10 +77,7 @@ while cap.isOpened():
     current_coords, maos = extrator.extrair(image, int(t * 1000))
     image = cv2.flip(image, 1)
 
-    # Feedback visual dos pontos
-    for mao in maos:
-        for lm in mao:
-            cv2.circle(image, (int((1 - lm.x) * image_w), int(lm.y * image_h)), 3, (0, 255, 0), -1)
+    interface.desenhar_maos(image, maos)
 
     # O horário do frame vai junto: a janela do reconhecedor é o último
     # 1 segundo, qualquer que seja o FPS desta máquina
@@ -89,31 +87,15 @@ while cap.isOpened():
     if frase is not None:
         traducao_final_tela = frase
 
-    # ==========================================
-    # INTERFACE VISUAL (HUD)
-    # ==========================================
-
-    # 1. Barra Inferior (As Glossas Detectadas)
-    cv2.rectangle(image, (0, image_h-40), (image_w, image_h), (30, 30, 30), -1)
-    texto_glossas = " > ".join(rec.glossas)
-    cv2.putText(image, f"Sinais: {texto_glossas}", (15, image_h-12),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 255), 2)
-
-    # 1b. Termômetro de confiança: o que o modelo está "pensando" agora.
-    # Verde = passou do threshold (contando votos); cinza = abaixo, ignorado.
-    if rec.conf_atual > 0:
-        cor = (0, 220, 0) if rec.conf_atual > THRESHOLD else (140, 140, 140)
-        largura = int((image_w - 30) * rec.conf_atual)
-        cv2.rectangle(image, (15, image_h-58), (15 + largura, image_h-48), cor, -1)
-        cv2.putText(image, f"{rec.candidata or '...'} {rec.conf_atual:.0%} ({rec.votos}/{rec.estabilidade})",
-                    (15, image_h-64), cv2.FONT_HERSHEY_SIMPLEX, 0.5, cor, 1)
-
-    # 2. Barra Superior (A Tradução do Gemma)
-    cv2.rectangle(image, (0, 0), (image_w, 50), (160, 40, 40), -1)
-    cv2.putText(image, f"Gemma: {traducao_final_tela}", (15, 33),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
-    cv2.putText(image, f"{fps_medio:.0f} FPS", (image_w - 90, 33),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.6, (200, 200, 200), 1)
+    interface.desenhar(image, EstadoTela(
+        glossas=rec.glossas,
+        candidata=rec.candidata,
+        confianca=rec.conf_atual,
+        progresso=rec.votos / rec.estabilidade,
+        frase=traducao_final_tela,
+        processando=tradutor.ocupado,
+        fps=fps_medio,
+    ))
 
     # O quadro vai para o arquivo antes da marca de gravação ser desenhada
     gravador.escrever(image)
@@ -133,10 +115,10 @@ while cap.isOpened():
     elif key == ord('c'):
         tradutor.descartar()
         rec.limpar()
-        traducao_final_tela = "Aguardando sinais..."
+        traducao_final_tela = ""
     elif key == ord(' ') and rec.glossas and not tradutor.ocupado:
         tradutor.pedir(rec.glossas)
-        traducao_final_tela = "Processando IA... aguarde."
+        traducao_final_tela = ""
         # Limpa as glossas: a próxima frase já pode ser sinalizada enquanto
         # o Gemma escreve esta
         rec.limpar()
