@@ -2,16 +2,16 @@ import json
 import sys
 import time
 import cv2
-import requests
 from pathlib import Path
 from tensorflow.keras.models import load_model
 
 from config import (
-    THRESHOLD, MODELO_LSTM, LABELS_JSON, OLLAMA_URL, OLLAMA_MODEL,
+    THRESHOLD, MODELO_LSTM, LABELS_JSON,
 )
 from extracao import Extrator
 from gravador import Gravador, desenhar_indicador
 from reconhecedor import ReconhecedorContinuo
+from traducao import TradutorEmSegundoPlano, pre_carregar
 
 # --- CARREGA O MODELO E AS CLASSES DO TREINO ---
 if not Path(MODELO_LSTM).exists() or not Path(LABELS_JSON).exists():
@@ -24,17 +24,6 @@ model_lstm = load_model(MODELO_LSTM)
 # (que é só um índice) sempre aponta para o nome certo.
 with open(LABELS_JSON, encoding='utf-8') as f:
     ACTIONS = json.load(f)
-
-# --- FUNÇÃO OLLAMA ---
-def chamar_gemma(glossas):
-    if not glossas: return ""
-    prompt = f"Converta estas glossas de LIBRAS para português fluído: {' '.join(glossas)}"
-    try:
-        payload = {"model": OLLAMA_MODEL, "prompt": prompt, "stream": False}
-        response = requests.post(OLLAMA_URL, json=payload, timeout=60)
-        return response.json().get('response', "Erro na resposta").strip()
-    except Exception as e:
-        return f"Erro: {e}"
 
 # --- EXTRATOR (mãos + referência do corpo) ---
 # Modo vídeo: rastreia as mãos entre frames. A pose roda a cada 3 frames
@@ -52,6 +41,9 @@ t_inicio = time.monotonic()
 t_anterior = t_inicio
 fps_medio = 0.0
 gravador = Gravador()
+# A tradução roda fora do loop da câmera, que não trava enquanto o Gemma pensa
+tradutor = TradutorEmSegundoPlano()
+pre_carregar()
 
 
 def mostrar(quadro):
@@ -92,6 +84,10 @@ while cap.isOpened():
     # O horário do frame vai junto: a janela do reconhecedor é o último
     # 1 segundo, qualquer que seja o FPS desta máquina
     rec.processar(current_coords, t)
+
+    frase = tradutor.frase_pronta()
+    if frase is not None:
+        traducao_final_tela = frase
 
     # ==========================================
     # INTERFACE VISUAL (HUD)
@@ -135,25 +131,14 @@ while cap.isOpened():
             gravador.iniciar(image_w, image_h)
             print(f"⏺  Gravando em {gravador.caminho} (R para parar)")
     elif key == ord('c'):
+        tradutor.descartar()
         rec.limpar()
         traducao_final_tela = "Aguardando sinais..."
-    elif key == ord(' '):
-        # Avisa na tela que está processando antes da chamada (que é lenta)
+    elif key == ord(' ') and rec.glossas and not tradutor.ocupado:
+        tradutor.pedir(rec.glossas)
         traducao_final_tela = "Processando IA... aguarde."
-        cv2.rectangle(image, (0, 0), (image_w, 50), (160, 40, 40), -1)
-        cv2.putText(image, f"Gemma: {traducao_final_tela}", (15, 33),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
-        gravador.escrever(image)
-        mostrar(image)
-        cv2.waitKey(1)  # Força atualização da tela
-
-        frase = chamar_gemma(rec.glossas)
-        traducao_final_tela = frase
-        # Enquanto o Gemma pensava o loop ficou parado: preenche esse tempo no
-        # vídeo com a tela de "Processando", como a pessoa viu
-        gravador.escrever(image)
-
-        # Limpa o buffer de sinais para a próxima frase
+        # Limpa as glossas: a próxima frase já pode ser sinalizada enquanto
+        # o Gemma escreve esta
         rec.limpar()
 
 if gravador.gravando:
