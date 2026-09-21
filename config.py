@@ -61,8 +61,9 @@ def grupo_origem(nome_arquivo: str) -> str:
     treino/teste, senão o teste avalia o modelo com cópias do que ele já
     viu (data leakage):
     - variações aumentadas ('aug_7_ext_oi...') pertencem ao vídeo original;
-    - repetições do mesmo sinalizante ('minds_s05_r1'/'minds_s05_r2' ou
-      'malta_a41_...') pertencem à mesma PESSOA.
+    - repetições do mesmo sinalizante ('minds_s05_r1'/'minds_s05_r2',
+      'malta_a41_...' ou 'pessoa-pedro_...', do coletor) pertencem à mesma
+      PESSOA.
     """
     # prefixos que não mudam a ORIGEM: variação aumentada, janela de
     # transição (trans_ini_/trans_fim_) e o próprio 'ext_' do processador
@@ -73,6 +74,9 @@ def grupo_origem(nome_arquivo: str) -> str:
     m = _re.search(r'malta_a(\d+)', nome)
     if m:
         return f'malta_a{m.group(1)}'
+    m = _re.search(r'pessoa-([a-z0-9-]+)_', nome)   # gravações do coletor
+    if m:
+        return f'pessoa-{m.group(1)}'
     return nome
 
 

@@ -287,3 +287,50 @@ class Interface:
         # fica à esquerda da etiqueta de FPS
         x = W - margem - self._largura_fps - round(10 * s) - pilula[0].shape[1]
         self._colar(quadro, pilula, x, margem)
+
+    # ---------- coletor ----------
+    def desenhar_coleta(self, quadro, sinal, pessoa, gravados, meta, fase="", progresso=0.0,
+                        mensagem="", cor_mensagem=APAGADO):
+        """Tela do coletor: sinal atual, contagem, fase da gravação e ajuda."""
+        H, W = quadro.shape[:2]
+        s = H / 720
+        margem = round(20 * s)
+        self._colar(quadro, self._pilula("Coletor do Ponte Libras", s, peso=800), margem, margem)
+        quem = self._pilula(f"Gravando como: {pessoa}", s, peso=500, cor=APAGADO)
+        self._colar(quadro, quem, W - margem - quem[0].shape[1], margem)
+
+        largura = W - 2 * margem
+        chave = ("coleta", sinal, gravados, meta, fase, mensagem, cor_mensagem, largura, round(s, 3))
+        if chave != self._painel_chave:
+            k = 2 * s
+            L = 2 * largura
+            pad = round(24 * k)
+            altura = round(150 * k)
+            img = Image.new("RGBA", (L, altura), (0, 0, 0, 0))
+            d = ImageDraw.Draw(img)
+            d.rounded_rectangle((0, 0, L - 1, altura - 1), radius=round(20 * k), fill=(*TINTA, 228))
+            d.text((pad, pad), sinal, font=self._fonte(800, round(40 * k)), fill=TURQUESA, anchor="lt")
+            d.text((pad, pad + round(54 * k)), f"{gravados} de {meta} gravações",
+                   font=self._fonte(500, round(17 * k)), fill=APAGADO, anchor="lt")
+            texto_fase = fase or "Aperte Espaço para gravar"
+            d.text((round(L * 0.36), pad), texto_fase, font=self._fonte(700, round(30 * k)),
+                   fill=BRANCO if fase else APAGADO, anchor="lt")
+            if mensagem:
+                d.text((round(L * 0.36), pad + round(54 * k)), mensagem,
+                       font=self._fonte(500, round(17 * k)), fill=cor_mensagem, anchor="lt")
+            ajuda = ["Espaço  gravar", "N / P  próximo / anterior", "Z  desfazer", "Q  sair"]
+            for i, t in enumerate(ajuda):
+                d.text((L - pad, pad + i * round(24 * k)), t, font=self._fonte(400, round(15 * k)),
+                       fill=APAGADO, anchor="rt")
+            self._painel = self._para_camada(img, (largura, altura // 2))
+            self._painel_chave = chave
+        px, py = margem, H - margem - self._painel[0].shape[0]
+        self._colar(quadro, self._painel, px, py)
+        if fase:
+            # barra de progresso da gravação, na base do painel
+            x0 = px + round(largura * 0.36)
+            x1 = px + largura - round(24 * s)
+            y = py + self._painel[0].shape[0] - round(26 * s)
+            cv2.rectangle(quadro, (x0, y), (x1, y + round(6 * s)), (70, 70, 70), -1)
+            cv2.rectangle(quadro, (x0, y), (x0 + round((x1 - x0) * min(1.0, progresso)), y + round(6 * s)),
+                          _bgr(TURQUESA), -1)

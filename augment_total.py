@@ -3,11 +3,13 @@ import os
 import random
 
 from config import ACTIONS, DATA_PATH
+from enquadramento import FAIXA_CORTE, simular_sentado
 
 # Alvo de amostras por classe APÓS o augment. Classes com muitos vídeos
 # originais recebem poucas variações; classes com poucos recebem muitas.
 # Sem esse balanceamento, o modelo aprende a chutar a classe majoritária.
 ALVO_POR_CLASSE = 66
+PROB_SENTADO = 0.5   # metade das variações simula a pessoa sentada
 
 def aplicar_augment(dados_originais):
     """Cria uma variação da sequência simulando diferenças reais entre pessoas.
@@ -18,8 +20,12 @@ def aplicar_augment(dados_originais):
       2. ROTAÇÃO leve — inclinação de câmera/postura
       3. TIME-WARP — pessoas sinalizam em velocidades diferentes
       4. JITTER — tremor natural das mãos
+      5. SENTADO (antes das outras) — webcam de notebook com a pessoa sentada:
+         a mão que desce abaixo do peito sai do quadro
     """
     dados = np.copy(dados_originais)
+    if random.random() < PROB_SENTADO:
+        dados = simular_sentado(dados, random.uniform(*FAIXA_CORTE))
     n_frames, n_coords = dados.shape
     mascara = dados.any(axis=1)  # frames com mão detectada
 
@@ -61,7 +67,9 @@ for action in ACTIONS:
     if not arquivos_originais:
         continue
 
-    variacoes = max(0, round(ALVO_POR_CLASSE / len(arquivos_originais)) - 1)
+    # pelo menos 1 variação por original: até a classe OUTRO, que já tem
+    # muitos exemplos, precisa ganhar versões com a pessoa sentada
+    variacoes = max(1, round(ALVO_POR_CLASSE / len(arquivos_originais)) - 1)
     total = len(arquivos_originais) * (variacoes + 1)
     print(f"📁 {action}: {len(arquivos_originais)} originais × {variacoes} variações = {total} amostras")
 
