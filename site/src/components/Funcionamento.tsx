@@ -13,7 +13,7 @@ export function Funcionamento() {
         ))}
       </ol>
       <div className="principios-bloco">
-        <h3 className="subtitulo">Feito para funcionar na escola</h3>
+        <h3 className="subtitulo">Pensado para o dia a dia</h3>
         <dl className="principios">
           {principios.map((pr) => (
             <div key={pr.titulo}>
