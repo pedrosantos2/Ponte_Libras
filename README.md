@@ -90,12 +90,19 @@ ollama create ponte-libras -f Modelfile
 
 Você pode coletar sinais de duas formas:
 
-**a) Pela webcam** — grava sequências de 30 frames ao vivo:
+**a) Pela webcam**, com o coletor guiado:
 
 ```bash
 python coletor_dados.py
-# 1/2/3: trocar de sinal  •  S: gravar 30 frames  •  Q: sair
 ```
+
+Ao abrir, ele pergunta o seu nome, que identifica quem gravou. Cada gravação é
+um clipe de 3,2 segundos guiado na tela (mãos em repouso, faça o sinal, volte
+ao repouso), reamostrado para 30 FPS pelo relógio. O segundo central vira um
+exemplo do sinal e o começo e o fim viram exemplos da classe OUTRO.
+
+Teclas: **Espaço** grava, **N**/**P** trocam de sinal, **Z** desfaz a última
+gravação e **Q** sai.
 
 **b) A partir de vídeos** — coloque arquivos `.mp4` em `videos_baixados/<SINAL>/` e extraia:
 
