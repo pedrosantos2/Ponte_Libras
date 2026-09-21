@@ -97,9 +97,11 @@ python coletor_dados.py
 ```
 
 Ao abrir, ele pergunta o seu nome, que identifica quem gravou. Cada gravação é
-um clipe de 3,2 segundos guiado na tela (mãos em repouso, faça o sinal, volte
-ao repouso), reamostrado para 30 FPS pelo relógio. O segundo central vira um
-exemplo do sinal e o começo e o fim viram exemplos da classe OUTRO.
+um clipe de 4 segundos guiado na tela (abaixe as mãos, faça o sinal, abaixe as
+mãos de novo), reamostrado para 30 FPS pelo relógio. O sinal é localizado pelo
+movimento dentro da fase do sinal e vira três exemplos; o começo e o fim viram
+exemplos da classe OUTRO só se forem repouso de verdade. O clipe inteiro fica
+guardado em `DATA_V2/_clipes`.
 
 Teclas: **Espaço** grava, **N**/**P** trocam de sinal, **Z** desfaz a última
 gravação e **Q** sai.

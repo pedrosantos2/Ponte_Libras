@@ -1,14 +1,18 @@
 """
 Coletor de exemplos pela webcam.
 
-Cada gravação é um clipe de 3,2 segundos guiado na tela:
-  0,0–1,0 s  mãos em repouso
-  1,0–2,2 s  faça o sinal
-  2,2–3,2 s  volte ao repouso
+Cada gravação é um clipe de 4 segundos guiado na tela:
+  0–1 s  abaixe as mãos
+  1–3 s  faça o sinal
+  3–4 s  abaixe as mãos de novo
 O clipe é reamostrado para 30 FPS pelo relógio (a webcam roda no FPS que a
-máquina aguentar) e vira três exemplos, como os vídeos de treino:
-  - o segundo central, com o sinal, na pasta do sinal;
-  - o começo e o fim, com a mão subindo e descendo, na pasta OUTRO.
+máquina aguentar) e o clipe inteiro é guardado em DATA_V2/_clipes, para poder
+ser recortado de novo no futuro. Dele saem os exemplos de treino:
+  - o SINAL é achado pelo movimento, não pelo relógio: o segundo com mais
+    movimento dentro da fase do sinal, mais duas cópias deslocadas 0,2 s;
+  - o começo e o fim viram exemplos de OUTRO, mas só se forem repouso de
+    verdade (mão parada perto do rosto parece um sinal e confundiria o modelo);
+  - gravando a própria classe OUTRO, os 4 segundos viram 4 exemplos.
 
 Os arquivos levam o nome de quem gravou ('pessoa-<nome>_...'), para a
 validação cruzada tratar todas as gravações de uma pessoa como uma pessoa só.
@@ -20,16 +24,26 @@ import unicodedata
 import cv2
 import numpy as np
 
-from config import ACTIONS, CLASSE_NEGATIVA, DATA_PATH, FRAME_COUNT, HAND_SIZE
+from config import ACTIONS, CLASSE_NEGATIVA, DATA_PATH, FRAME_COUNT, HAND_SIZE, NUM_HANDS
 from extracao import Extrator
 from interface import TURQUESA, ALERTA, Interface
 
 FPS_ALVO = 30
 PREPARO_S = 1.5              # contagem antes de começar, fora do clipe
-FASES = [(1.0, "Mãos em repouso"), (2.2, "Faça o sinal agora"), (3.2, "Volte ao repouso")]
+FASES = [(1.0, "Abaixe as mãos"), (3.0, "Faça o sinal agora"), (4.0, "Abaixe as mãos de novo")]
 DURACAO_S = FASES[-1][0]
 META_POR_SINAL = 10
 MIN_QUADROS_COM_MAO = FRAME_COUNT // 2
+# Onde procurar o sinal (s): a fase do sinal com uma folga para cada lado
+BUSCA_SINAL = (0.7, 3.3)
+DESLOCAMENTO = 6             # quadros (0,2 s) das cópias deslocadas
+# Movimento mínimo numa janela de 1 s para contar como sinal. Calibrado nas
+# primeiras gravações: fazendo o sinal, 40 a 69; mão parada, até ~18.
+MOVIMENTO_MINIMO = 25.0
+# Mão "no rosto": pulso até 0,8 ombro abaixo do nariz. Um trecho de repouso
+# com a mão ali em mais de 40% dos quadros não vira exemplo de OUTRO.
+ALTURA_ROSTO = 0.8
+PASTA_CLIPES = DATA_PATH / "_clipes"
 
 
 def slug(texto):
@@ -48,29 +62,99 @@ def reamostrar(tempos, quadros, fps=FPS_ALVO, duracao=DURACAO_S):
 
 
 def arquivos_da_pessoa(sinal, pessoa):
-    pasta = DATA_PATH / sinal
+    """Clipes gravados por esta pessoa para este sinal."""
+    pasta = PASTA_CLIPES / sinal
     return sorted(pasta.glob(f"pessoa-{pessoa}_*.npy")) if pasta.exists() else []
 
 
+def _referencia(clipe):
+    corpo = clipe[:, HAND_SIZE:]
+    ok = corpo[:, 2] > 0
+    if not ok.any():
+        return None
+    return np.median(corpo[ok, 1]), np.median(corpo[ok, 2])
+
+
+def movimento(clipe):
+    """Movimento das mãos de um quadro para o próximo, em larguras de ombro."""
+    _, ombros = _referencia(clipe)
+    e = np.zeros(len(clipe))
+    for t in range(1, len(clipe)):
+        for h in range(NUM_HANDS):
+            a = clipe[t - 1, h * 63:(h + 1) * 63]
+            b = clipe[t, h * 63:(h + 1) * 63]
+            if a.any() and b.any():
+                e[t] += np.abs(b.reshape(21, 3)[:, :2] - a.reshape(21, 3)[:, :2]).sum() / ombros
+    return e
+
+
+def mao_no_rosto(janela, nariz_y, ombros):
+    """Fração dos quadros com alguma mão na altura do rosto."""
+    n = 0
+    for q in janela:
+        for h in range(NUM_HANDS):
+            m = q[h * 63:(h + 1) * 63]
+            if m.any() and (m[1] - nariz_y) / ombros < ALTURA_ROSTO:
+                n += 1
+                break
+    return n / len(janela)
+
+
+def recortar(sinal, clipe):
+    """Clipe -> (janelas do sinal, janelas de OUTRO, aviso, erro)."""
+    ref = _referencia(clipe)
+    if ref is None:
+        return [], [], "", "O corpo não foi detectado. Fique de frente para a câmera."
+    nariz_y, ombros = ref
+    F = FRAME_COUNT
+
+    if sinal == CLASSE_NEGATIVA:
+        return [], [clipe[i:i + F] for i in range(0, len(clipe) - F + 1, F)], "", ""
+
+    e = movimento(clipe)
+    ini, fim = int(BUSCA_SINAL[0] * FPS_ALVO), int(BUSCA_SINAL[1] * FPS_ALVO)
+    somas = [(e[i:i + F].sum(), i) for i in range(ini, fim - F + 1)]
+    melhor, inicio = max(somas)
+    janela = clipe[inicio:inicio + F]
+    if melhor < MOVIMENTO_MINIMO:
+        return [], [], "", "Não vi o movimento do sinal. Grave de novo, durante a fase do sinal."
+    if int(janela[:, :HAND_SIZE].any(axis=1).sum()) < MIN_QUADROS_COM_MAO:
+        return [], [], "", "As mãos quase não apareceram no sinal. Grave de novo."
+    do_sinal = [clipe[i:i + F] for i in (inicio - DESLOCAMENTO, inicio, inicio + DESLOCAMENTO)
+                if 0 <= i and i + F <= len(clipe)]
+
+    outro, aviso = [], ""
+    for trecho in (clipe[:F], clipe[-F:]):
+        if mao_no_rosto(trecho, nariz_y, ombros) > 0.4:
+            aviso = "Sinal salvo. Dica: abaixe as mãos no começo e no fim."
+        else:
+            outro.append(trecho)
+    return do_sinal, outro, aviso, ""
+
+
 def salvar(sinal, pessoa, clipe):
-    """Divide o clipe em miolo e transições e salva. Devolve (arquivos, erro)."""
-    meio = len(clipe) // 2
-    miolo = clipe[meio - FRAME_COUNT // 2: meio + FRAME_COUNT // 2]
-    if int(miolo[:, :HAND_SIZE].any(axis=1).sum()) < MIN_QUADROS_COM_MAO:
-        return [], "As mãos quase não apareceram no sinal. Grave de novo."
-    if not (miolo[:, HAND_SIZE + 2] > 0).any():
-        return [], "O corpo não foi detectado. Fique de frente para a câmera."
+    """Recorta o clipe e salva. Devolve (arquivos, aviso, erro)."""
+    do_sinal, outro, aviso, erro = recortar(sinal, clipe)
+    if erro:
+        return [], "", erro
     n = len(arquivos_da_pessoa(sinal, pessoa)) + 1
     base = f"pessoa-{pessoa}_{n:02d}_{slug(sinal)}_{int(time.time())}"
-    (DATA_PATH / sinal).mkdir(parents=True, exist_ok=True)
-    (DATA_PATH / CLASSE_NEGATIVA).mkdir(parents=True, exist_ok=True)
-    salvos = [DATA_PATH / sinal / f"{base}.npy"]
-    np.save(salvos[0], miolo)
-    for nome, janela in [("trans_ini", clipe[:FRAME_COUNT]), ("trans_fim", clipe[-FRAME_COUNT:])]:
-        caminho = DATA_PATH / CLASSE_NEGATIVA / f"{nome}_{base}.npy"
+    salvos = []
+    (PASTA_CLIPES / sinal).mkdir(parents=True, exist_ok=True)
+    caminho = PASTA_CLIPES / sinal / f"{base}.npy"
+    np.save(caminho, clipe)
+    salvos.append(caminho)
+    for i, janela in enumerate(do_sinal):
+        (DATA_PATH / sinal).mkdir(parents=True, exist_ok=True)
+        caminho = DATA_PATH / sinal / f"{base}_j{i}.npy"
         np.save(caminho, janela)
         salvos.append(caminho)
-    return salvos, ""
+    for i, janela in enumerate(outro):
+        (DATA_PATH / CLASSE_NEGATIVA).mkdir(parents=True, exist_ok=True)
+        caminho = DATA_PATH / CLASSE_NEGATIVA / f"trans{i}_{base}.npy"
+        np.save(caminho, janela)
+        salvos.append(caminho)
+    return salvos, aviso, ""
 
 
 def main():
@@ -116,13 +200,13 @@ def main():
             fase = next(nome for limite, nome in FASES if dt < limite) if dt < DURACAO_S else FASES[-1][1]
             progresso = dt / DURACAO_S
             if dt >= DURACAO_S:
-                salvos, erro = salvar(sinal, pessoa, reamostrar(tempos, quadros))
+                salvos, aviso, erro = salvar(sinal, pessoa, reamostrar(tempos, quadros))
                 if erro:
                     mensagem, cor_msg = erro, ALERTA
                 else:
                     ultimos = salvos
-                    mensagem, cor_msg = "Gravação salva.", TURQUESA
-                    print(f"✅ {sinal}: {salvos[0].name}")
+                    mensagem, cor_msg = (aviso, ALERTA) if aviso else ("Gravação salva.", TURQUESA)
+                    print(f"✅ {sinal}: {salvos[0].name} ({len(salvos) - 1} exemplos)")
                 estado = "livre"
 
         gravados = len(arquivos_da_pessoa(sinal, pessoa))
