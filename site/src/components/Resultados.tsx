@@ -3,49 +3,45 @@ import { Secao } from './Secao'
 
 export function Resultados() {
   return (
-    <Secao id="resultados" rotulo="03 — Onde estamos" titulo="Um protótipo, medido com honestidade.">
+    <Secao id="resultados" titulo="Onde o protótipo está hoje">
       <div className="texto">
         <p>
-          O sistema é sempre avaliado com <strong>pessoas que ele nunca viu durante o treino</strong>. É a
-          medida mais dura, e a única que diz como ele se comporta com alguém novo na frente da câmera.
+          O sistema reconhece 11 sinais. Ele é sempre avaliado com <strong>pessoas que nunca apareceram no
+          treino</strong>, que é o teste mais difícil e o único que mostra como ele se sai com alguém novo na
+          frente da câmera.
         </p>
       </div>
 
       <div className="rolagem">
         <table>
-          <caption className="mono">Acerto por sinal · pessoas nunca vistas</caption>
+          <caption>Acerto por sinal, testando com pessoas que o sistema nunca viu</caption>
           <thead>
             <tr>
-              <th scope="col" className="mono">Sinal</th>
-              <th scope="col" className="mono">Pessoas no treino</th>
-              <th scope="col" className="mono" colSpan={2}>Acerto</th>
+              <th scope="col">Sinal</th>
+              <th scope="col">Pessoas no treino</th>
+              <th scope="col"><span className="sr-only">Gráfico</span></th>
+              <th scope="col" className="num">Acerto</th>
             </tr>
           </thead>
           <tbody>
             {resultados.map((r) => (
               <tr key={r.sinal}>
                 <th scope="row">{r.sinal}</th>
-                <td>{r.pessoas}</td>
-                <td className="b" aria-hidden="true">
-                  <div><span className="barra" style={{ width: `${Math.max(r.acerto, 2)}%` }} /></div>
-                </td>
-                <td className="n">{r.acerto}%</td>
+                <td className="pessoas">{r.pessoas}</td>
+                <td className="trilho" aria-hidden="true"><span style={{ width: `${r.acerto}%` }} /></td>
+                <td className="num">{r.acerto}%</td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
 
-      <blockquote>
-        <p>
-          O que mais melhora o reconhecimento não é a tecnologia. É a <em>quantidade de pessoas diferentes</em> sinalizando nos dados.
-        </p>
-      </blockquote>
+      <p className="conclusao">Os sinais que mais acertam são os que mais pessoas diferentes gravaram.</p>
 
-      <p className="fonte">
-        Dados de treino: V-LIBRASIL (UFPE), MINDS-Libras (UFMG) e MALTA-LIBRAS, que reúne dicionários de
-        Libras de instituições como UFSC, UFV e USP. Agradecemos aos grupos de pesquisa que tornaram esses
-        vídeos públicos.
+      <p className="fontes">
+        Os vídeos de treino vêm de três bases públicas: V-LIBRASIL (UFPE), MINDS-Libras (UFMG) e
+        MALTA-LIBRAS, que reúne dicionários de Libras de instituições como UFSC, UFV e USP. Obrigado aos
+        grupos de pesquisa que abriram esses dados.
       </p>
     </Secao>
   )

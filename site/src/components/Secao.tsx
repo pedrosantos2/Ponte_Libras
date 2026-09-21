@@ -2,22 +2,17 @@ import type { ReactNode } from 'react'
 
 type Props = {
   id: string
-  rotulo: string
   titulo: string
-  invertida?: boolean
+  className?: string
   children: ReactNode
 }
 
-/** Seção numerada: rótulo fixo na coluna da esquerda, conteúdo à direita. */
-export function Secao({ id, rotulo, titulo, invertida, children }: Props) {
+export function Secao({ id, titulo, className, children }: Props) {
   return (
-    <section id={id} className={invertida ? 'invertido' : undefined} aria-labelledby={`${id}-t`}>
-      <div className="caixa secao">
-        <p className="rotulo mono">{rotulo}</p>
-        <div>
-          <h2 id={`${id}-t`}>{titulo}</h2>
-          {children}
-        </div>
+    <section id={id} className={['secao', className].filter(Boolean).join(' ')} aria-labelledby={`${id}-t`}>
+      <div className="caixa">
+        <h2 id={`${id}-t`}>{titulo}</h2>
+        {children}
       </div>
     </section>
   )

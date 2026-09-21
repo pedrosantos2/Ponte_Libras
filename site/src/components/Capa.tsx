@@ -1,31 +1,40 @@
-import { ficha, REPO_LABEL, REPO_URL } from '../data/conteudo'
+import { REPO_URL } from '../data/conteudo'
+import { CameraMaos } from './CameraMaos'
 
 export function Capa() {
   return (
-    <section className="capa" aria-labelledby="titulo">
+    <header className="capa">
       <div className="caixa">
-        <h1 id="titulo">
-          Uma ponte entre quem <span className="grifo">sinaliza</span> e quem <span className="grifo">ouve</span>.
-        </h1>
-        <p className="resumo">
-          Um sistema de código aberto que reconhece sinais da Língua Brasileira de Sinais pela webcam de
-          um computador comum e os transforma em frases em português.
-        </p>
-        <a className="rolar mono" href="#problema">↓ Role para ler</a>
+        <div className="capa-barra">
+          <a className="nome" href="#">Ponte Libras</a>
+          <nav aria-label="Seções">
+            <ul>
+              <li><a href="#como-funciona">Como funciona</a></li>
+              <li><a href="#resultados">Resultados</a></li>
+              <li><a href="#participe">Participe</a></li>
+            </ul>
+          </nav>
+        </div>
 
-        <dl className="ficha">
-          {ficha.map((item) => (
-            <div key={item.rotulo}>
-              <dt className="mono">{item.rotulo}</dt>
-              <dd>{item.valor}</dd>
-            </div>
-          ))}
+        <div className="capa-corpo">
           <div>
-            <dt className="mono">Código</dt>
-            <dd><a href={REPO_URL}>{REPO_LABEL}</a></dd>
+            <h1><span className="linha">A webcam vê o sinal.</span> <span className="linha">O Ponte Libras escreve a frase.</span></h1>
+            <p className="resumo">
+              Um sistema de código aberto que reconhece sinais da Língua Brasileira de Sinais e os transforma
+              em frases em português, num computador comum e sem internet.
+            </p>
+            <p className="credito">
+              Trabalho de Conclusão de Curso em Engenharia de Software na Católica de Santa Catarina, em
+              Jaraguá do Sul.
+            </p>
+            <div className="botoes">
+              <a className="botao botao-cheio" href="#como-funciona">Ver como funciona</a>
+              <a className="botao botao-linha" href={REPO_URL}>Ver o código no GitHub</a>
+            </div>
           </div>
-        </dl>
+          <CameraMaos />
+        </div>
       </div>
-    </section>
+    </header>
   )
 }
