@@ -6,13 +6,14 @@ export function Problema() {
       <div className="texto">
         <p>
           A Libras é língua oficial do Brasil, mas pessoas surdas ainda dependem de um intérprete até para
-          situações simples do dia a dia, inclusive dentro da escola. Quando o intérprete não está por perto,
-          a conversa entre um estudante surdo e seus colegas ou professores muitas vezes não acontece.
+          situações simples do dia a dia: na escola, no trabalho, no atendimento de uma loja ou de um serviço.
+          Quando o intérprete não está por perto, a conversa com colegas, professores ou clientes muitas vezes
+          não acontece.
         </p>
         <p>
-          O Ponte Libras quer ajudar de dois jeitos: <strong>apoiando conversas simples</strong> entre
-          estudantes surdos e ouvintes, e <strong>dando retorno imediato</strong> a quem está aprendendo
-          Libras e quer praticar.
+          O Ponte Libras quer ajudar de dois jeitos: <strong>apoiando conversas simples</strong> entre pessoas
+          surdas e ouvintes, em escolas e empresas, e <strong>dando retorno imediato</strong> a quem está
+          aprendendo Libras, como equipes que querem se comunicar melhor com colegas e clientes surdos.
         </p>
       </div>
       <div className="ressalva">

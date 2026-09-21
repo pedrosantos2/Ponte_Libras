@@ -21,7 +21,7 @@ export function Capa() {
             <h1><span className="linha">A webcam vê o sinal.</span> <span className="linha">O Ponte Libras escreve a frase.</span></h1>
             <p className="resumo">
               Um sistema de código aberto que reconhece sinais da Língua Brasileira de Sinais e os transforma
-              em frases em português, num computador comum e sem internet.
+              em frases em português, no próprio computador e sem internet.
             </p>
             <p className="credito">
               Trabalho de Conclusão de Curso em Engenharia de Software na Católica de Santa Catarina, em

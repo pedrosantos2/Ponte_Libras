@@ -42,7 +42,7 @@ legendas escritas na tela, porque o vídeo precisa funcionar para quem é surdo.
    cd /Users/pedrin_047/Documents/tradutor-libras && ./venv/bin/python tradutor_final.py
    ```
 
-2. Aperte **R** para começar a gravar. Aparece "GRAVANDO 00:00" no canto da
+2. Aperte **R** para começar a gravar. Aparece "Gravando 00:00" no canto da
    tela; essa marca **não vai para o vídeo**, é só para você.
 3. Siga as cenas abaixo.
 4. Aperte **R** de novo para parar. O terminal mostra onde o arquivo foi salvo
@@ -57,10 +57,10 @@ reconhecedor e evita que o movimento de transição vire uma glossa.
 
 | # | Tempo | O que você faz | Legenda na tela |
 |---|---|---|---|
-| 1 | 0–8 s | Fica parado, de frente para a câmera, mãos abaixadas. | Ponte Libras reconhece sinais de Libras pela webcam, num notebook comum e sem internet. |
-| 2 | 8–20 s | Faz **OI** (letras O e I, perto do rosto) e baixa as mãos. | Os pontos verdes são as mãos que o sistema enxerga. Ao reconhecer o sinal, a glossa OI aparece embaixo. |
+| 1 | 0–8 s | Fica parado, de frente para a câmera, mãos abaixadas. | Ponte Libras reconhece sinais de Libras pela webcam, no próprio computador e sem internet. |
+| 2 | 8–20 s | Faz **OI** (letras O e I, perto do rosto) e baixa as mãos. | O desenho sobre as mãos é o que o sistema enxerga. Ao reconhecer o sinal, a glossa OI aparece no painel de baixo. |
 | 3 | 20–38 s | Faz **GOSTAR**, baixa as mãos, faz **AMARELO** e baixa as mãos. | Cada sinal reconhecido entra na sequência de glossas, que é a forma escrita dos sinais. |
-| 4 | 38–55 s | Aperta **Espaço**. A frase "Oi, eu gosto de amarelo." aparece na barra de cima. | Um modelo de linguagem, rodando no próprio computador, escreve a frase em português. |
+| 4 | 38–55 s | Aperta **Espaço**. A frase "Oi, eu gosto de amarelo." aparece em destaque no painel de baixo. | Um modelo de linguagem, rodando no próprio computador, escreve a frase em português. |
 | 5 | 55–68 s | Aperta **C** para limpar e faz um gesto que não é sinal (o que você escolheu no ensaio). | Gestos que não fazem parte do vocabulário não viram tradução. |
 | 6 | 68–80 s | Tela final (eu monto na edição). | Protótipo de TCC em Engenharia de Software, Católica de Santa Catarina. Quer ajudar a melhorar o sistema? Grave sinais com a gente. + endereço do projeto |
 
