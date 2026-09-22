@@ -15,7 +15,7 @@ import numpy as np
 import tensorflow as tf
 
 from config import (
-    FRAME_COUNT, HAND_SIZE, THRESHOLD, CLASSE_NEGATIVA, normalizar_sequencia,
+    FRAME_COUNT, HAND_SIZE, THRESHOLD, CLASSE_NEGATIVA, glossa_de, normalizar_sequencia,
 )
 
 FPS_TREINO = 30.0
@@ -119,7 +119,8 @@ class ReconhecedorContinuo:
             self._resetar_candidata()
             return None
 
-        pred = self.actions[idx]
+        # variantes do mesmo sinal (ex.: OI e OI_ACENO) valem como a mesma glossa
+        pred = glossa_de(self.actions[idx])
         if pred == CLASSE_NEGATIVA or (
                 self.idx_outro is not None
                 and float(res[self.idx_outro]) > self.veto_outro):

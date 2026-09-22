@@ -44,6 +44,7 @@ MOVIMENTO_MINIMO = 25.0
 # com a mão ali em mais de 40% dos quadros não vira exemplo de OUTRO.
 ALTURA_ROSTO = 0.8
 PASTA_CLIPES = DATA_PATH / "_clipes"
+NOME_NA_TELA = {"OI_ACENO": "OI (aceno)", "OI": "OI (letras O e I)"}
 
 
 def slug(texto):
@@ -210,7 +211,7 @@ def main():
                 estado = "livre"
 
         gravados = len(arquivos_da_pessoa(sinal, pessoa))
-        interface.desenhar_coleta(imagem, sinal, pessoa, gravados, META_POR_SINAL,
+        interface.desenhar_coleta(imagem, NOME_NA_TELA.get(sinal, sinal), pessoa, gravados, META_POR_SINAL,
                                   fase, progresso, mensagem, cor_msg)
         cv2.imshow("Ponte Libras - Coletor", imagem)
 

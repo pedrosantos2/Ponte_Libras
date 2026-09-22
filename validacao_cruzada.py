@@ -15,7 +15,7 @@ from tensorflow.keras.layers import LSTM, Dense, Dropout
 
 from config import (
     ACTIONS, DATA_PATH, FRAME_COUNT, COORD_SIZE, FEATURE_SIZE,
-    EPOCHS, BATCH_SIZE, normalizar_sequencia, grupo_origem,
+    EPOCHS, BATCH_SIZE, glossa_de, normalizar_sequencia, grupo_origem,
 )
 from enquadramento import simular_sentado
 
@@ -89,11 +89,13 @@ for fold in range(N_FOLDS):
     pred = model.predict(X[mascara_teste], verbose=0).argmax(1)
     pred_s = model.predict(Xs[mascara_teste], verbose=0).argmax(1)
     reais = labels[mascara_teste]
+    # acerto pela GLOSSA: prever OI para um OI_ACENO (ou o contrário) está certo
+    g = np.array([glossa_de(a) for a in ACTIONS])
     for ci, action in enumerate(ACTIONS):
         sel = reais == ci
         if sel.any():
-            acc = float((pred[sel] == ci).mean())
-            acc_s = float((pred_s[sel] == ci).mean())
+            acc = float((g[pred[sel]] == g[ci]).mean())
+            acc_s = float((g[pred_s[sel]] == g[ci]).mean())
             acertos_classe[action].append(acc)
             acertos_sentado[action].append(acc_s)
             print(f"  {action:10s} teste={grupos_teste[ci][:30]:32s} em pé {acc:4.0%} | sentado {acc_s:4.0%}")
