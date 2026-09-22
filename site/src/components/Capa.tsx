@@ -9,6 +9,7 @@ export function Capa() {
           <a className="nome" href="#">Ponte Libras</a>
           <nav aria-label="Seções">
             <ul>
+              <li><a href="#demonstracao">Demonstração</a></li>
               <li><a href="#como-funciona">Como funciona</a></li>
               <li><a href="#resultados">Resultados</a></li>
               <li><a href="#participe">Participe</a></li>
@@ -28,7 +29,7 @@ export function Capa() {
               Jaraguá do Sul.
             </p>
             <div className="botoes">
-              <a className="botao botao-cheio" href="#como-funciona">Ver como funciona</a>
+              <a className="botao botao-cheio" href="#demonstracao">Ver funcionando</a>
               <a className="botao botao-linha" href={REPO_URL}>Ver o código no GitHub</a>
             </div>
           </div>

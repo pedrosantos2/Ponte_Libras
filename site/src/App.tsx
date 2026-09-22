@@ -1,4 +1,5 @@
 import { Capa } from './components/Capa'
+import { Demonstracao } from './components/Demonstracao'
 import { Funcionamento } from './components/Funcionamento'
 import { Participe } from './components/Participe'
 import { Problema } from './components/Problema'
@@ -12,6 +13,7 @@ export default function App() {
       <a className="pular" href="#conteudo">Pular para o conteúdo</a>
       <Capa />
       <main id="conteudo">
+        <Demonstracao />
         <Problema />
         <Funcionamento />
         <Resultados />

@@ -36,6 +36,11 @@ export function Resultados() {
         </table>
       </div>
 
+      <p className="nota-tabela">
+        BANANA também faz parte do vocabulário, mas ainda não é reconhecida de forma confiável e fica fora
+        da tabela até ter gravações de mais pessoas.
+      </p>
+
       <p className="conclusao">Os sinais que mais acertam são os que mais pessoas diferentes gravaram.</p>
 
       <p className="fontes">
