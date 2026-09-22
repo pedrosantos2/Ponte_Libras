@@ -63,8 +63,14 @@ labels = np.array(labels)
 grupos = np.array(grupos)
 y = to_categorical(labels, num_classes=len(ACTIONS)).astype(int)
 
-grupos_por_classe = {ci: sorted({g for g, l in zip(grupos, labels) if l == ci})
+# As gravações do coletor ('pessoa-...') ficam SEMPRE no treino: a pergunta
+# aqui é se o modelo reconhece os sinalizantes das bases públicas. Como elas
+# aparecem em várias classes, sorteá-las para o teste tiraria a pessoa de
+# todas as classes e o resultado passaria a medir só ela.
+grupos_por_classe = {ci: sorted({g for g, l in zip(grupos, labels)
+                                 if l == ci and not g.startswith("pessoa-")})
                      for ci in set(labels)}
+grupos_por_classe = {ci: gs for ci, gs in grupos_por_classe.items() if gs}
 
 # Pesos de classe: OUTRO tem muito mais amostras (janelas de transição)
 pesos = compute_class_weight('balanced', classes=np.arange(len(ACTIONS)), y=labels)
