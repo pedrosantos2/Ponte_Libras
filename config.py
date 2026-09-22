@@ -12,7 +12,7 @@ import numpy as np
 # --- SINAIS (a ordem importa: é o índice que a rede neural aprende) ---
 ACTIONS = [
     # V-LIBRASIL (3 sinalizantes cada)
-    "OI", "GOSTAR", "LARANJA", "ABACAXI", "BANANA", "MORANGO",
+    "OI", "OI_ACENO", "GOSTAR", "LARANJA", "ABACAXI", "BANANA", "MORANGO",
     # MINDS-Libras (8 sinalizantes × 2 repetições cada)
     "ACONTECER", "AMARELO", "BANHEIRO", "MEDO",
     # MALTA-LIBRAS (dicionários agregados, 8 sinalizantes)
@@ -23,6 +23,18 @@ ACTIONS = [
     "OUTRO",
 ]
 CLASSE_NEGATIVA = "OUTRO"   # nunca vira glossa na inferência
+
+# Variantes de um mesmo sinal treinadas como classes separadas e mostradas com
+# a mesma glossa. O OI tem duas formas bem diferentes: a datilologia O-I (mão
+# fechada, na altura do peito) e o aceno (mão aberta, na altura do rosto).
+# Numa classe só, ela se estica para cobrir as duas e passa a "roubar" outros
+# sinais de mão aberta, como ABACAXI e GOSTAR.
+GLOSSAS = {"OI_ACENO": "OI"}
+
+
+def glossa_de(classe):
+    """Nome da classe do modelo -> glossa mostrada ao usuário."""
+    return GLOSSAS.get(classe, classe)
 
 # --- CAMINHOS ---
 # (o sufixo _v2 marca a representação com referência do corpo; os arquivos

@@ -16,7 +16,7 @@ from dataclasses import dataclass
 
 import requests
 
-from config import ACTIONS, CLASSE_NEGATIVA, OLLAMA_MODEL, OLLAMA_URL
+from config import ACTIONS, CLASSE_NEGATIVA, OLLAMA_MODEL, OLLAMA_URL, glossa_de
 
 # Mantém o modelo carregado na memória entre traduções. Sem isso o Ollama o
 # descarrega após 5 min parado e a próxima tradução volta a ser lenta.
@@ -89,7 +89,7 @@ def verificar(glossas, frase):
         problemas.append("negação que não foi sinalizada")
     # outro sinal do vocabulário que ninguém fez (ex.: "gosto" sem GOSTAR)
     feitos = {_normalizar(g).upper() for g in glossas}
-    for sinal in ACTIONS:
+    for sinal in sorted({glossa_de(a) for a in ACTIONS}):
         if sinal == CLASSE_NEGATIVA or _normalizar(sinal).upper() in feitos:
             continue
         if any(p.startswith(r) for p in palavras for r in _radicais(sinal)):
