@@ -259,3 +259,13 @@ Histórico do diagnóstico (bom material de metodologia):
 - [ ] Mais sinalizantes por sinal (MINDS-Libras e/ou gravações próprias) — maior impacto
 - [ ] Usar um conjunto de validação separado do teste
 - [ ] Expandir o vocabulário de sinais
+
+---
+
+## 📄 Licença
+
+Código sob licença MIT (veja `LICENSE`), de Pedro Henrique Santos.
+
+A fonte Atkinson Hyperlegible Next, em `assets/fontes/`, tem licença própria
+(SIL Open Font License, veja `assets/fontes/OFL.txt`). Os vídeos de treino
+pertencem às bases públicas citadas acima e não são redistribuídos aqui.
