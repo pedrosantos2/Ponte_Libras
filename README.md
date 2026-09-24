@@ -1,4 +1,4 @@
-# 🤟 Tradutor LIBRAS-SC
+# 🤟 Ponte Libras
 
 Sistema de reconhecimento de **LIBRAS** (Língua Brasileira de Sinais) que usa visão computacional
 para detectar sinais a partir da webcam ou de vídeos e os traduz para **português fluído** com a
