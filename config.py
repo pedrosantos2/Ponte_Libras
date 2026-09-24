@@ -64,7 +64,27 @@ OLLAMA_URL = "http://localhost:11434/api/generate"
 OLLAMA_MODEL = "ponte-libras"
 
 # --- AGRUPAMENTO PARA O SPLIT TREINO/TESTE ---
+import json as _json
 import re as _re
+
+# O V-LIBRASIL nomeia os vídeos por posição na página ('art1', 'art2', 'art3'),
+# não por pessoa: o art1 de MORANGO não é o art1 de OI. Como as MESMAS pessoas
+# reaparecem em sinais diferentes, confiar no índice colocaria a mesma pessoa
+# no treino de um sinal e no teste de outro. Este mapa, feito conferindo os
+# rostos dos 50 vídeos um a um, diz quem é quem.
+_MAPA_VLIBRASIL = Path(__file__).parent / "sinalizantes_vlibrasil.json"
+_SINALIZANTES = None
+
+
+def _sinalizantes_vlibrasil():
+    global _SINALIZANTES
+    if _SINALIZANTES is None:
+        try:
+            _SINALIZANTES = _json.loads(_MAPA_VLIBRASIL.read_text())
+        except FileNotFoundError:
+            _SINALIZANTES = {}
+    return _SINALIZANTES
+
 
 def grupo_origem(nome_arquivo: str) -> str:
     """Identifica de qual PESSOA/amostra original um arquivo .npy veio.
@@ -75,7 +95,8 @@ def grupo_origem(nome_arquivo: str) -> str:
     - variações aumentadas ('aug_7_ext_oi...') pertencem ao vídeo original;
     - repetições do mesmo sinalizante ('minds_s05_r1'/'minds_s05_r2',
       'malta_a41_...' ou 'pessoa-pedro_...', do coletor) pertencem à mesma
-      PESSOA.
+      PESSOA;
+    - vídeos do V-LIBRASIL são resolvidos pelo mapa de rostos acima.
     """
     # prefixos que não mudam a ORIGEM: variação aumentada, janela de
     # transição (trans_ini_/trans_fim_) e o próprio 'ext_' do processador
@@ -89,6 +110,10 @@ def grupo_origem(nome_arquivo: str) -> str:
     m = _re.search(r'pessoa-([a-z0-9-]+)_', nome)   # gravações do coletor
     if m:
         return f'pessoa-{m.group(1)}'
+    if nome.startswith('vlibrasil_'):
+        pessoa = _sinalizantes_vlibrasil().get(nome.removesuffix('.npy'))
+        if pessoa:
+            return f'vlibrasil_{pessoa}'
     return nome
 
 

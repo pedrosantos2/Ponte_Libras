@@ -217,47 +217,53 @@ mesma glossa), `GOSTAR`, `LARANJA`, `ABACAXI`, `BANANA`, `MORANGO`, `ACONTECER`,
 ## 📊 Resultados atuais
 
 Validação cruzada **leave-one-signer-out** (3 folds): em cada fold, uma pessoa inteira fica fora do
-treino e só aparece no teste. As gravações do autor (`pessoa-*`) ficam sempre no treino, para que o
-número meça a generalização para **sinalizantes das bases públicas**, não para quem gravou o
-dataset. A coluna "sentado" aplica `enquadramento.simular_sentado()` às mesmas amostras de teste:
-a câmera do notebook corta na altura do peito e a mão que desce sai do quadro.
+treino e só aparece no teste — em todas as classes em que ela aparece. As gravações do autor
+(`pessoa-*`) ficam sempre no treino, para que o número meça a generalização para **sinalizantes das
+bases públicas**, não para quem gravou o dataset. A coluna "sentado" aplica
+`enquadramento.simular_sentado()` às mesmas amostras de teste: a câmera do notebook corta na altura
+do peito e a mão que desce sai do quadro.
 
-**Acurácia média geral: 56,1% em pé | 42,2% sentado** (13 classes, chute aleatório ≈ 7,7%).
+**Acurácia média geral: 40,8% em pé | 37,5% sentado** (13 classes, chute aleatório ≈ 7,7%).
+Desconsiderando `OI_ACENO`, que tem um único sinalizante e por isso não tem como ser avaliada
+(quando ela vai para o teste, sobra quase nada dela no treino): **44,2% | 40,7%**.
 
-| Sinal | Em pé | Sentado | Pessoas no dataset |
-|---|---|---|---|
-| AMARELO | 89% | 89% | 8 |
-| LARANJA | 83% | 83% | 9 |
-| OI (datilologia) | 79% | 81% | 8 |
-| BOM | 78% | 78% | 8 |
-| OUTRO | 66% | 67% | 76 |
-| MORANGO | 62% | 50% | 3 |
-| GOSTAR | 62% | 19% | 4 |
-| MEDO | 56% | 48% | 8 |
-| ACONTECER | 44% | 11% | 8 |
-| ABACAXI | 42% | 2% | 3 |
-| BANHEIRO | 37% | 4% | 8 |
-| OI (aceno) | 17% | 17% | 1 |
-| BANANA | 14% | 0% | 3 |
+| Sinal | Em pé | Sentado | Pessoas | Folds (em pé) |
+|---|---|---|---|---|
+| AMARELO | 85% | 85% | 8 | 89 / 67 / 100 |
+| OUTRO | 72% | 74% | 34 | 68 / 68 / 79 |
+| OI (datilologia) | 63% | 81% | 8 | 62 / 60 / 66 |
+| MEDO | 59% | 63% | 8 | 56 / 56 / 67 |
+| LARANJA | 46% | 64% | 9 | 43 / 43 / 52 |
+| MORANGO | 40% | 38% | 3 | 100 / 20 / 0 |
+| BOM | 39% | 39% | 7 | 0 / 67 / 50 |
+| ACONTECER | 37% | 19% | 8 | 33 / 33 / 44 |
+| BANHEIRO | 37% | 15% | 8 | 11 / 33 / 67 |
+| GOSTAR | 23% | 3% | 4 | 19 / 12 / 38 |
+| ABACAXI | 23% | 7% | 3 | 14 / 0 / 55 |
+| BANANA | 7% | 0% | 3 | 18 / 2 / 0 |
+| OI (aceno) | 0% | 0% | 1 | 0 / 0 / 0 |
 
 Leitura dos números:
 
-- A correlação com a **quantidade de pessoas** no treino é direta: os sinais com 8 ou 9
-  sinalizantes estão entre os melhores; os com 3 ou 4 (frutas, GOSTAR) são os piores. O gargalo é
-  diversidade de dados, não arquitetura.
-- **OI (aceno)** tem uma única fonte — é uma variante que quase não aparece nas bases públicas.
-- **Sentado** derruba justamente os sinais feitos na altura da cintura ou do peito (ACONTECER,
-  ABACAXI, BANHEIRO, GOSTAR), que saem do enquadramento da webcam do notebook.
+- A correlação com a **quantidade de pessoas** no treino é direta e é o achado central do trabalho:
+  os sinais com 8 ou 9 sinalizantes ocupam o topo da tabela; os com 3 ou 4 (frutas, GOSTAR) ocupam o
+  fundo. O gargalo é diversidade de dados, não arquitetura de rede.
+- A **coluna de folds** mostra por que uma média sozinha engana: MORANGO vai de 100% a 0%
+  dependendo de quem cai no teste. Com 3 sinalizantes, o modelo está memorizando pessoas, não
+  aprendendo o sinal.
+- **Sentado** derruba justamente os sinais feitos na altura da cintura ou do peito (GOSTAR,
+  ABACAXI, BANHEIRO, ACONTECER), que saem do enquadramento da webcam do notebook.
 - Cada treino começa de pesos aleatórios, então os números oscilam alguns pontos entre execuções.
-  Com 3 folds e poucos sinalizantes, diferença de ~10 pontos num sinal isolado é ruído.
 
 No fluxo contínuo simulado (`testar_tradutor.py`): 5/5 sinais conhecidos reconhecidos sem "caronas",
 repouso em silêncio e 1 glossa indevida em 2 vídeos de sinais desconhecidos. O verificador de
-frases passa em 36/36 casos (`testar_verificador.py`).
+frases passa em 36/36 casos (`testar_verificador.py`). Na prática, com o autor na frente da webcam,
+os sinais que ele mesmo gravou são reconhecidos de forma consistente — o que a tabela acima mede é
+justamente o contrário: o desempenho com **pessoas que o modelo nunca viu**.
 
 ### Histórico da metodologia
 
-Bom material de TCC — a maior parte do ganho veio de corrigir a **avaliação**, não o modelo:
+Bom material de TCC — a maior parte do movimento veio de corrigir a **avaliação**, não o modelo:
 
 | Etapa | Acurácia honesta | O que mudou |
 |---|---|---|
@@ -266,12 +272,20 @@ Bom material de TCC — a maior parte do ganho veio de corrigir a **avaliação*
 | Normalização por sequência | 48,5% | Preserva locação e movimento (antes eram destruídos) |
 | Mais sinalizantes (MALTA) | 54,3% | OI foi de 0% a 81% com 8 pessoas |
 | Referência do corpo (v2) | 57,5% | Locação: LARANJA +21pp, ABACAXI +28pp, BOM +24pp |
-| Exemplos sentados no treino | 65,9% / 56,9% | Medida na época, com `pessoa-*` também no teste |
-| Métrica atual | 56,1% / 42,2% | Métrica mais dura: `pessoa-*` só no treino, e a nova classe OI_ACENO (1 pessoa) entra na média |
+| Exemplos sentados no treino | 65,9% / 56,9% | Medido com `pessoa-*` também no teste |
+| `pessoa-*` só no treino | 56,1% / 42,2% | Reconhecer quem gravou o dataset não conta |
+| Sinalizante do V-LIBRASIL identificado | **40,8% / 37,5%** | Último vazamento fechado (abaixo) |
 
-> A queda na última linha **não é regressão do modelo**: é a régua que ficou mais honesta. Antes, as
-> gravações do autor podiam cair no teste — e reconhecer quem gravou o dataset é bem mais fácil do
-> que reconhecer um estranho.
+> As três últimas linhas **não são regressão do modelo** — é a régua que ficou honesta. Cada queda
+> corresponde a uma facilidade que o teste estava dando de graça.
+
+**O último vazamento.** O V-LIBRASIL nomeia os vídeos pela posição na página (`art1`, `art2`,
+`art3`), e esse índice **não** identifica a pessoa: nos 50 vídeos usados aqui, o `art1` é o mesmo
+rapaz em 13 deles, mas é um homem de barba em MORANGO, ESCOLA e LIVRO. Como as mesmas 6 pessoas
+reaparecem em sinais diferentes, o split tratava uma única pessoa como várias — ela ficava no teste
+de um sinal e no treino de outro. Os rostos dos 50 vídeos foram conferidos um a um e o resultado
+está em `sinalizantes_vlibrasil.json`, que `grupo_origem()` consulta. O efeito era grande: a classe
+`OUTRO` parecia ter 76 sinalizantes e tem **34**.
 
 Achado que orientou a v2: os sinais localizados na **região da boca** (frutas, BOM) se confundiam
 entre si porque a locação era o parâmetro discriminante e o pipeline antigo, ancorado no pulso, não
@@ -285,11 +299,10 @@ a capturava.
   É a melhoria de maior impacto disponível.
 - **BANANA** está perto de 0%: além de ter 3 fontes, é um sinal de movimento curto que a janela de
   1 segundo captura mal.
-- `grupo_origem()` **não reconhece o padrão de nome do V-LIBRASIL** (`vlibrasil_art1_oi.mp4.npy`),
-  que cai no fallback do nome do arquivo. Dentro de uma classe os três sinalizantes ficam
-  separados corretamente, mas a mesma pessoa não é identificada **entre** classes — então ela pode
-  estar no teste de um sinal e no treino de outro. Corrigir isso deve baixar um pouco os números
-  atuais e torná-los mais honestos.
+- O mapa `sinalizantes_vlibrasil.json` foi feito por **inspeção visual** dos 50 vídeos, não por
+  reconhecimento facial automático: distinguir o homem de barba do rapaz, ou a sinalizante de
+  cabelo cacheado da de cabelo liso, é seguro, mas as atribuições dentro de um mesmo perfil físico
+  merecem conferência se os metadados oficiais do V-LIBRASIL ficarem disponíveis.
 - A validação durante o treino reusa o conjunto de teste (aceitável com poucos dados; o ideal é um
   conjunto de validação separado quando o dataset crescer).
 - O reconhecimento é de **sinais isolados**, não de LIBRAS em contexto: não há expressão facial
@@ -309,8 +322,8 @@ a capturava.
 - [x] Reconhecimento por tempo, independente do FPS da webcam
 - [x] Verificação da frase do Gemma contra os sinais detectados
 - [x] Robustez para a pessoa **sentada** na webcam do notebook
+- [x] Identificar o sinalizante do V-LIBRASIL entre classes (`sinalizantes_vlibrasil.json`)
 - [ ] Mais sinalizantes por sinal (gravações próprias e parcerias) — maior impacto
-- [ ] Identificar o sinalizante do V-LIBRASIL entre classes em `grupo_origem()`
 - [ ] Conjunto de validação separado do teste
 - [ ] Expandir o vocabulário
 
