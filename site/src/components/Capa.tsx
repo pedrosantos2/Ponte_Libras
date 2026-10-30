@@ -1,4 +1,4 @@
-import { REPO_URL } from '../data/conteudo'
+import { PLATAFORMA_URL, REPO_URL } from '../data/conteudo'
 import { CameraMaos } from './CameraMaos'
 
 export function Capa() {
@@ -15,6 +15,7 @@ export function Capa() {
               <li><a href="#participe">Participe</a></li>
             </ul>
           </nav>
+          <a className="capa-entrar" href={PLATAFORMA_URL}>Entrar</a>
         </div>
 
         <div className="capa-corpo">
