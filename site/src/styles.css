@@ -37,22 +37,50 @@ a { color: var(--tinta); text-decoration-thickness: 1px; text-underline-offset: 
 a:hover { text-decoration-thickness: 3px; }
 :focus-visible { outline: 3px solid var(--tinta); outline-offset: 3px; border-radius: 4px; }
 
+.pular { position: absolute; left: -9999px; top: 0; z-index: 20; background: var(--tinta); color: var(--branco); padding: 12px 18px; border-radius: 0 0 8px 0; }
+.pular:focus { left: 0; }
 
 .caixa { width: min(1120px, 100% - 48px); margin-inline: auto; }
 @media (max-width: 600px) { .caixa { width: calc(100% - 32px); } }
 
-/* ---------- botões ---------- */
+/* ---------- topo ---------- */
+.capa { background: var(--turquesa); padding-bottom: clamp(56px, 8vw, 104px); }
+.capa-barra { display: flex; justify-content: space-between; align-items: center; gap: 24px; padding: 22px 0; }
+.capa-barra .nome { font-weight: 800; font-size: 1.15rem; letter-spacing: -0.01em; text-decoration: none; }
+.capa-barra ul { display: flex; gap: 28px; margin: 0; padding: 0; list-style: none; }
+.capa-barra ul a { text-decoration: none; font-weight: 500; }
+.capa-barra ul a:hover { text-decoration: underline; text-decoration-thickness: 2px; }
+@media (max-width: 720px) { .capa-barra ul { display: none; } }
+.capa-barra nav { margin-left: auto; }
+.capa-entrar { padding: 8px 16px; border: 2px solid var(--tinta); border-radius: 9px; font-weight: 700; text-decoration: none; }
+.capa-entrar:hover { background: var(--tinta); color: var(--branco); text-decoration: none; }
+.capa-barra .nome, .capa-barra ul a, .capa-entrar { white-space: nowrap; }
+@media (min-width: 721px) and (max-width: 900px) { .capa-barra ul { gap: 16px; } }
+
+.capa-corpo { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: clamp(32px, 5vw, 72px); align-items: center; padding-top: clamp(28px, 5vw, 64px); }
+@media (max-width: 880px) { .capa-corpo { grid-template-columns: 1fr; } }
+.capa-corpo .resumo { font-size: clamp(1.1rem, 1.7vw, 1.3rem); max-width: 36ch; margin: 28px 0 0; }
+.capa-corpo .credito { max-width: 44ch; margin-top: 18px; color: #0b3b43; }
 .botoes { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 34px; }
 .botao { display: inline-block; padding: 14px 22px; border-radius: 10px; font-weight: 700; text-decoration: none; border: 2px solid var(--tinta); }
 .botao:hover { text-decoration: none; }
 .botao-cheio { background: var(--tinta); color: var(--branco); }
 .botao-cheio:hover { background: #0e3d45; border-color: #0e3d45; }
-.botao-linha { background: transparent; color: var(--tinta); }
+.botao-linha { color: var(--tinta); }
 .botao-linha:hover { background: rgba(4, 38, 44, 0.08); }
 
-/* ---------- etiquetas de glossa (aplicativo e vídeos) ---------- */
+/* ---------- câmera com as mãos ---------- */
+.camera { margin: 0; }
+.camera-tela { position: relative; background: var(--tinta); border-radius: 22px; aspect-ratio: 1 / 1; overflow: hidden; }
+.camera-tela svg { display: block; width: 100%; height: 100%; }
+.camera-saida { position: absolute; left: 16px; right: 16px; bottom: 16px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; min-height: 44px; }
 .glossa { background: var(--turquesa); color: var(--tinta); font-weight: 800; letter-spacing: 0.04em; padding: 6px 12px; border-radius: 6px; }
 .frase { color: var(--branco); font-weight: 700; font-size: 1.25rem; }
+.camera-saida[data-visivel="false"] { visibility: hidden; }
+.camera-pausa { position: absolute; top: 14px; right: 14px; background: rgba(255, 255, 255, 0.12); color: var(--branco); border: 0; border-radius: 8px; padding: 8px 12px; font: 500 0.875rem/1 "Atkinson Hyperlegible Next", sans-serif; cursor: pointer; }
+.camera-pausa:hover { background: rgba(255, 255, 255, 0.22); }
+.camera-pausa:focus-visible { outline-color: var(--branco); }
+.camera figcaption { margin-top: 14px; font-size: 0.95rem; color: #0b3b43; max-width: 48ch; }
 
 /* ---------- seções ---------- */
 /* As seções usam uma coluna de leitura centralizada, mais estreita que o topo.
@@ -131,101 +159,116 @@ h1 .linha { display: block; }
 .video-descricao p { margin-top: 10px; }
 .nota-tabela { margin-top: 14px; font-size: 0.95rem; color: var(--tinta-2); }
 
-/* ---------- aplicativo (topo da página) ---------- */
-/* Uma tela só, como a janela do programa em Python: a câmera com a tradução
-   logo abaixo, e a gravação ao lado. No celular, uma coluna nessa ordem. */
-button.botao { font: inherit; font-weight: 700; cursor: pointer; }
-button:disabled { opacity: 0.45; cursor: not-allowed; }
-.botao-claro { background: var(--turquesa); border-color: var(--turquesa); color: var(--tinta); }
-.botao-claro:hover { background: #4fd0d5; border-color: #4fd0d5; }
-
-kbd { display: inline-block; min-width: 1.6em; padding: 1px 6px; border: 1px solid currentColor; border-bottom-width: 2px; border-radius: 5px; font: 700 0.75em/1.4 "Atkinson Hyperlegible Next", system-ui, sans-serif; text-align: center; opacity: 0.85; }
-.botao kbd { margin-left: 8px; vertical-align: 1px; }
-/* sem teclado (celular, tablet): as teclas não fazem sentido */
-@media (hover: none) and (pointer: coarse) { kbd, .app-comandos { display: none; } }
-
-.app-topo { background: var(--turquesa); }
-.app-topo-barra { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px 24px; padding: 12px 0; }
-.app-topo-barra .nome { margin: 0; font-size: 1.2rem; font-weight: 800; letter-spacing: -0.01em; }
-.app-comandos { margin: 0; font-size: 0.9rem; font-weight: 500; }
-
-.app { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(300px, 1fr); gap: clamp(20px, 3vw, 36px); align-items: start; padding-block: clamp(16px, 2.5vw, 28px) clamp(36px, 5vw, 64px); }
-@media (max-width: 900px) { .app { grid-template-columns: minmax(0, 1fr); } }
-.app-principal { display: grid; gap: 12px; min-width: 0; }
-
-/* câmera */
-.app-tela { position: relative; max-width: 100%; min-height: 220px; background: var(--tinta); border-radius: 18px; overflow: hidden; }
-@media (max-width: 900px) { .app-tela { max-height: 62vh; } }
-/* no computador, a câmera deixa espaço para a faixa de tradução na mesma tela */
-@media (min-width: 901px) { .app-tela { max-height: calc(100svh - 300px); margin-inline: auto; } }
-.app-tela video, .app-tela canvas { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-.espelho { transform: scaleX(-1); }
-.app-convite { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 18px; padding: 24px; background: var(--tinta); text-align: center; color: var(--branco); }
-.app-convite p { margin: 0; max-width: 38ch; }
-.app-convite .app-convite-dica { font-size: 0.9rem; color: rgba(255, 255, 255, 0.8); }
-.app-convite .app-erro { color: #ffd2c8; }
-
-.app-indicadores { position: absolute; top: 12px; left: 12px; display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
-.app-indicadores li { padding: 5px 10px; border-radius: 8px; background: rgba(4, 38, 44, 0.78); color: var(--branco); font-size: 0.85rem; font-weight: 500; }
-.app-indicadores li::before { content: ""; display: inline-block; width: 8px; height: 8px; margin-right: 7px; border: 2px solid var(--branco); border-radius: 50%; vertical-align: 1px; }
-.app-indicadores li[data-ok="true"]::before { background: var(--turquesa); border-color: var(--turquesa); }
-
-.app-fala { position: absolute; left: 16px; right: 16px; top: 40%; margin: 0; text-align: center; color: var(--branco); font-size: clamp(1.5rem, 3.4vw, 2.5rem); font-weight: 800; letter-spacing: -0.01em; text-shadow: 0 2px 14px rgba(0, 0, 0, 0.6); pointer-events: none; }
-
-.app-roteiro { display: flex; gap: 6px; margin: 8px 0 0; padding: 0; list-style: none; }
-.app-roteiro li { position: relative; flex-basis: 0; overflow: hidden; padding: 7px 10px 11px; border-radius: 8px; background: var(--gelo); color: var(--tinta-2); font-size: 0.82rem; white-space: nowrap; text-overflow: ellipsis; }
-.app-roteiro b { font-weight: 500; }
-.app-roteiro li span { position: absolute; left: 0; right: 0; bottom: 0; height: 4px; background: var(--tinta-2); transform-origin: left; transform: scaleX(0); }
-.app-roteiro li[data-sinal="true"] span { background: var(--turquesa-forte); }
-.app-roteiro li[data-sinal="true"] b { font-weight: 700; color: var(--tinta); }
-
-/* tradução: uma faixa de legenda logo abaixo da câmera */
-.app-traducao { padding: 12px 16px 14px; border-radius: 14px; background: var(--gelo); }
-.app-traducao-topo { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 14px; min-height: 34px; }
-.app-traducao h2, .app-rotulo { margin: 0; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--tinta-2); }
-.app-candidata { display: flex; align-items: center; gap: 10px; min-height: 23px; font-size: 0.9rem; color: var(--tinta-2); }
-/* tela estreita: a candidata ganha linha própria, reservada, e a faixa não pula */
-@media (max-width: 600px) { .app-candidata { order: 3; flex-basis: 100%; } }
-.app-candidata strong { color: var(--tinta); letter-spacing: 0.04em; }
-.app-barra { position: relative; width: 90px; height: 6px; border-radius: 3px; background: rgba(4, 38, 44, 0.12); overflow: hidden; }
-.app-barra span { position: absolute; inset: 0; background: var(--turquesa-forte); transform-origin: left; }
-.app-botao-pequeno { margin-left: auto; display: inline-flex; align-items: center; gap: 4px; padding: 5px 10px; border: 2px solid rgba(4, 38, 44, 0.2); border-radius: 8px; background: var(--branco); color: var(--tinta); font: inherit; font-size: 0.9rem; font-weight: 700; cursor: pointer; }
-.app-botao-pequeno:hover:not(:disabled) { border-color: var(--tinta); }
-.app-traducao-corpo { display: flex; align-items: center; min-height: 52px; margin-top: 6px; }
-.app-glossas { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
-.app-glossas .glossa { padding: 6px 14px; border-radius: 8px; font-size: 1.35rem; }
-.app-vazio { margin: 0; color: var(--tinta-2); }
-.app-traducao-pe { margin: 8px 0 0; padding-top: 8px; border-top: 1px solid rgba(4, 38, 44, 0.1); font-size: 0.85rem; color: var(--tinta-2); }
-.app-privacidade { margin: 0; font-size: 0.9rem; color: var(--tinta-2); }
-
-/* gravação: painel ao lado da câmera */
-.app-gravacao { padding: 20px 22px; border: 2px solid rgba(4, 38, 44, 0.12); border-radius: 18px; background: var(--branco); }
-@media (min-width: 901px) { .app-gravacao { position: sticky; top: 16px; } }
-.app-gravacao h2 { font-size: 1.4rem; letter-spacing: -0.01em; }
-.app-intro { margin: 6px 0 16px; font-size: 0.95rem; color: var(--tinta-2); }
-.app-campo { display: grid; gap: 6px; font-weight: 700; font-size: 0.95rem; }
-.app-campo input { width: 100%; padding: 11px 14px; border: 2px solid rgba(4, 38, 44, 0.55); border-radius: 10px; background: var(--branco); color: var(--tinta); font: inherit; font-size: 1.15rem; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; }
-.app-campo input::placeholder { color: var(--tinta-2); font-weight: 500; letter-spacing: 0; text-transform: none; }
-.app-campo input:focus { outline: 3px solid var(--tinta); outline-offset: 2px; border-color: var(--tinta); }
-.app-ajuda { margin: 8px 0 0; font-size: 0.92rem; color: var(--tinta-2); }
-.app-ajuda p { margin: 0 0 6px; }
-.app-carente { color: #08666c; font-weight: 700; }
-.app-meta { margin: 4px 0 0; font-size: 0.9rem; color: var(--tinta-2); font-variant-numeric: tabular-nums; }
-.app-gravar { width: 100%; margin-top: 12px; }
-.app-revisao { margin-top: 12px; padding: 12px 14px; border-radius: 12px; background: var(--gelo); }
-.app-revisao p { margin: 0 0 10px; }
-.app-revisao-botoes { display: flex; flex-wrap: wrap; gap: 8px; }
-.app-erro { color: #9b2c1f; font-weight: 700; }
-
-.app-gravacao .app-rotulo { margin: 20px 0 8px; }
-.app-atalhos { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
-.app-atalhos button { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border: 2px solid rgba(4, 38, 44, 0.18); border-radius: 9px; background: var(--branco); color: var(--tinta); font: inherit; font-weight: 700; cursor: pointer; }
-.app-atalhos button:hover:not(:disabled) { border-color: var(--tinta); }
-.app-atalhos button[aria-pressed="true"] { background: var(--tinta); border-color: var(--tinta); color: var(--branco); }
-.app-conta { min-width: 1.4em; padding: 0 5px; border-radius: 9px; background: var(--turquesa); color: var(--tinta); font-size: 0.8rem; text-align: center; font-variant-numeric: tabular-nums; }
-.app-link { padding: 0; border: 0; background: none; color: var(--tinta); font: inherit; font-weight: 700; text-decoration: underline; text-underline-offset: 0.18em; cursor: pointer; }
-
-.app-salvar { display: grid; gap: 10px; margin-top: 18px; padding-top: 16px; border-top: 2px solid rgba(4, 38, 44, 0.1); }
-.app-salvar p { margin: 0; font-size: 0.88rem; color: var(--tinta-2); }
-
-.sobre-projeto { border-top: 2px solid rgba(4, 38, 44, 0.12); }
+/* Portal: navegação e guias de contribuição */
+:root { --papel: #f6f7f2; }
+body { background: var(--papel); }
+main:focus { outline: none; }
+.portal-topo { background: var(--papel); border-bottom: 1px solid #04262c20; }
+.portal-barra { display: flex; align-items: center; justify-content: space-between; gap: 28px; min-height: 94px; flex-wrap: wrap; padding-block: 18px; }
+.portal-marca { display: flex; align-items: center; gap: 10px; font-size: 1.2rem; font-weight: 800; text-decoration: none; }
+.marca-simbolo { background: var(--tinta); color: var(--turquesa); width: 38px; height: 40px; border-radius: 4px 14px 4px 4px; font-size: 26px; line-height: 34px; text-align: center; letter-spacing: -5px; padding-right: 5px; }
+.marca-simbolo span { color: white; }
+.portal-barra nav { display: flex; gap: 26px; }
+.portal-barra nav a { padding-block: 8px; text-decoration: none; font-size: .95rem; }
+.portal-barra nav a[aria-current] { border-bottom: 2px solid var(--turquesa-forte); font-weight: 800; }
+.portal-conta { border: 1px solid #04262c50; border-radius: 5px; padding: 9px 14px; text-decoration: none; font-size: .9rem; font-weight: 700; }
+.portal-hero { padding-block: 70px 68px; border-bottom: 1px solid #04262c20; }
+.hero-grade { display: grid; grid-template-columns: 1.2fr 1fr; gap: 55px; align-items: center; }
+.sobretitulo { font-size: .73rem; font-weight: 800; letter-spacing: .12em; margin-bottom: 22px; }
+.portal-hero h1 { font-size: clamp(2.8rem, 5vw, 4.4rem); line-height: 1.08; letter-spacing: -.045em; }
+.portal-hero h1 em { font-style: normal; color: var(--turquesa-forte); }
+.hero-texto { font-size: 1.12rem; max-width: 47ch; margin-top: 28px; color: var(--tinta-2); }
+.hero-link { align-self: center; font-size: .95rem; font-weight: 700; }
+.hero-nota { margin-top: 28px; font-size: .76rem; color: var(--tinta-2); }
+.hero-camera { padding: 20px; background: #e3ede8; border: 1px solid #04262c18; border-radius: 6px; transform: rotate(1.5deg); }
+.hero-camera .camera-tela { border-radius: 4px; }
+.etiqueta-camera { display: block; font-size: .7rem; letter-spacing: .13em; margin-bottom: 14px; font-weight: 800; }
+.hero-camera .camera figcaption { font-size: .8rem; }
+.portal-secao { padding-block: 70px; }
+.titulo-linha { display: flex; justify-content: space-between; gap: 25px; align-items: end; margin-bottom: 32px; }
+.titulo-linha .sobretitulo { margin-bottom: 12px; }
+.titulo-linha h2 { font-size: clamp(1.8rem, 3vw, 2.3rem); }
+.titulo-linha > p { color: var(--tinta-2); font-size: .95rem; }
+.caminhos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+.caminho { background: #fff; border: 1px solid #04262c25; padding: 28px; text-decoration: none; display: flex; flex-direction: column; min-height: 330px; border-radius: 5px; transition: border-color .15s; }
+.caminho:hover { border-color: var(--turquesa-forte); text-decoration: none; }
+.caminho-destaque { background: var(--turquesa); }
+.numero { font-size: .7rem; letter-spacing: .09em; font-weight: 700; margin-bottom: 38px; }
+.caminho h3 { font-size: 1.5rem; letter-spacing: -.025em; margin-bottom: 18px; }
+.caminho p { font-size: .95rem; }
+.caminho-fim { margin-top: auto; padding-top: 26px; display: flex; justify-content: space-between; font-size: .88rem; font-weight: 800; }
+.faixa-pesquisa { background: var(--tinta); padding-block: 64px; color: #d6e4e1; }
+.faixa-pesquisa .caixa { display: grid; grid-template-columns: 1fr 1fr; gap: 0 80px; }
+.faixa-pesquisa .sobretitulo { grid-column: 1 / -1; color: var(--turquesa); }
+.faixa-pesquisa h2, .faixa-pesquisa a { color: white; }
+.faixa-pesquisa a { font-weight: 700; }
+.pagina-cabeca { padding-block: 64px 40px; }
+.pagina-cabeca h1 { max-width: 850px; font-size: clamp(2.5rem, 5vw, 4rem); line-height: 1.1; }
+.pagina-resumo { font-size: 1.17rem; color: var(--tinta-2); max-width: 65ch; margin-top: 24px; }
+.biblioteca { display: grid; grid-template-columns: 1.4fr 1fr; gap: 64px; padding-top: 15px; }
+.tutorial-capa { display: block; padding: 42px; background: var(--turquesa); text-decoration: none; border-radius: 5px; }
+.tutorial-capa h2 { margin-block: 40px 24px; }
+.tutorial-capa p { max-width: 42ch; }
+.tutorial-capa .botao { margin-top: 18px; }
+.nota-editorial { border-top: 2px solid var(--tinta); padding-top: 24px; }
+.nota-editorial h2 { font-size: 1.5rem; margin-bottom: 20px; }
+.guia-layout { display: grid; grid-template-columns: 230px minmax(0, 1fr); gap: 65px; padding-block: 16px 80px; align-items: start; }
+.guia-indice { position: sticky; top: 24px; font-size: .9rem; }
+.guia-indice .sobretitulo { margin-top: 32px; margin-bottom: 14px; }
+.guia-indice nav { display: grid; gap: 14px; margin-bottom: 32px; }
+.guia-indice nav a { text-decoration: none; }
+.guia-indice nav a:hover { text-decoration: underline; }
+.guia-indice > p:last-child { padding-top: 20px; border-top: 1px solid #04262c25; color: var(--tinta-2); }
+.guia-artigo { max-width: 740px; }
+.aviso-guia { background: #e3ede8; border-left: 3px solid var(--turquesa-forte); padding: 24px; }
+.aviso-guia p { margin-top: 8px; }
+.guia-artigo section { margin-top: 48px; padding-top: 30px; border-top: 1px solid #04262c25; scroll-margin-top: 20px; }
+.passo-numero { color: var(--turquesa-forte); font-size: .9rem; font-weight: 800; display: block; margin-bottom: 12px; }
+.guia-artigo h2 { font-size: 1.85rem; margin-bottom: 24px; }
+.guia-artigo li { margin-bottom: 10px; }
+.guia-artigo pre { padding: 20px; background: var(--tinta); color: #e8f7f2; overflow-x: auto; font-size: .88rem; border-radius: 5px; line-height: 1.8; }
+.guia-artigo code { overflow-wrap: anywhere; }
+.guia-artigo pre code { overflow-wrap: normal; }
+.guia-artigo details { padding: 15px 0; border-bottom: 1px solid #04262c25; }
+.guia-artigo summary { cursor: pointer; font-weight: 700; }
+.guia-artigo details p { margin-top: 16px; }
+kbd { font: inherit; font-size: .86rem; font-weight: 700; line-height: 1.7; border: 1px solid #04262c40; border-bottom-width: 3px; border-radius: 4px; padding: 2px 7px; background: white; white-space: nowrap; }
+.linha-tempo { list-style: none; padding: 0; margin-block: 28px; }
+.linha-tempo li { display: grid; grid-template-columns: 75px 1fr; gap: 20px; background: white; border: 1px solid #04262c20; padding: 20px; margin-bottom: 10px; }
+.linha-tempo li > strong { color: var(--turquesa-forte); }
+.linha-tempo h3 { margin-bottom: 8px; }
+.voltar-guia { display: inline-block; margin-top: 48px; }
+.contribuir-grade { display: grid; grid-template-columns: 1fr 1fr; gap: 42px 70px; padding-top: 20px; }
+.contribuir-grade h2 { font-size: 1.6rem; margin-bottom: 18px; }
+.contribuir-grade > div { padding-top: 24px; border-top: 1px solid #04262c30; }
+@media (max-width: 900px) {
+  .portal-barra { gap: 16px; }
+  .portal-barra nav { gap: 18px; }
+  .hero-grade { grid-template-columns: 1fr 1fr; gap: 28px; }
+  .caminho { padding: 22px; }
+  .caminho h3 { font-size: 1.25rem; }
+  .guia-layout { grid-template-columns: 190px minmax(0, 1fr); gap: 30px; }
+}
+@media (max-width: 700px) {
+  .portal-barra nav { order: 3; width: 100%; justify-content: space-between; gap: 8px; border-top: 1px solid #04262c20; padding-top: 8px; }
+  .portal-barra nav a { font-size: .88rem; }
+  .portal-conta { font-size: .8rem; }
+  .portal-hero { padding-block: 40px; }
+  .hero-grade, .caminhos, .biblioteca, .contribuir-grade, .faixa-pesquisa .caixa { grid-template-columns: 1fr; }
+  .hero-camera { transform: none; margin-top: 20px; }
+  .hero-camera .camera-tela { max-height: 400px; }
+  .portal-secao { padding-block: 42px; }
+  .titulo-linha { display: block; }
+  .titulo-linha > p { margin-top: 18px; }
+  .caminho { min-height: 270px; }
+  .numero { margin-bottom: 24px; }
+  .faixa-pesquisa h2 { margin-bottom: 24px; }
+  .pagina-cabeca { padding-top: 40px; }
+  .biblioteca { gap: 32px; }
+  .tutorial-capa { padding: 26px; }
+  .guia-layout { grid-template-columns: 1fr; gap: 28px; }
+  .guia-indice { position: static; }
+  .guia-indice nav { gap: 10px; }
+  .guia-indice > p:last-child { display: none; }
+  .linha-tempo li { grid-template-columns: 1fr; gap: 8px; }
+}

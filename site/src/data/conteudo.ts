@@ -1,6 +1,9 @@
 // Conteúdo do site em um só lugar: atualizar números aqui, não nos componentes.
 
 export const REPO_URL = 'https://github.com/pedrosantos2/Ponte_Libras'
+// A plataforma (área com login) é um site separado, em app-plataforma/.
+// No build de produção, defina VITE_PLATAFORMA_URL com o endereço dela.
+export const PLATAFORMA_URL = import.meta.env.VITE_PLATAFORMA_URL ?? 'http://localhost:5174'
 
 export const etapas = [
   { titulo: 'A câmera filma', texto: 'A pessoa sinaliza em frente à webcam de um notebook ou computador comum.' },
@@ -10,7 +13,7 @@ export const etapas = [
 ]
 
 export const principios = [
-  { titulo: 'A imagem não sai do computador', texto: 'O reconhecimento roda no próprio navegador ou computador. A versão no site precisa de internet para carregar o modelo e para conferir o nome de um sinal novo; o programa instalado funciona sem conexão.' },
+  { titulo: 'Funciona sem internet', texto: 'Todo o processamento acontece no próprio computador, o que serve para lugares com conexão instável.' },
   { titulo: 'Não grava ninguém', texto: 'As imagens da câmera não são salvas nem enviadas para nenhum servidor.' },
   { titulo: 'Não precisa de placa de vídeo', texto: 'Foi desenvolvido num notebook com 8 GB de memória, sem placa de vídeo dedicada. Fazer funcionar em computadores mais simples é um dos próximos passos.' },
   { titulo: 'É de código aberto', texto: 'O código está publicado para quem quiser estudar, usar ou melhorar.' },

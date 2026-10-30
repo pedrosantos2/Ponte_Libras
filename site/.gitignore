@@ -22,10 +22,3 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-
-# Teste de paridade do extrator (gerados por testar_paridade_web.py)
-.paridade/
-public/paridade/
-
-# Lista de palavras gerada por scripts/gerar-dicionario.mjs (npm run dicionario)
-public/dicionario/

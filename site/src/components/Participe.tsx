@@ -12,8 +12,7 @@ export function Participe() {
         </p>
       </div>
       <div className="botoes">
-        <a className="botao botao-cheio" href="#gravar">Gravar sinais agora</a>
-        <a className="botao botao-linha" href={`${REPO_URL}/issues`}>Deixar uma mensagem no GitHub</a>
+        <a className="botao botao-cheio" href={`${REPO_URL}/issues`}>Deixar uma mensagem no GitHub</a>
       </div>
     </Secao>
   )
