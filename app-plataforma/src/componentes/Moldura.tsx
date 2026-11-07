@@ -105,7 +105,7 @@ export function Tela({ titulo, erros, voltar, rotuloDe, children }: TelaProps) {
   useTrocaDeTela(titulo, !!erros?.erros.length, h1)
   return (
     <Moldura>
-      <div className="coluna">
+      <div className="coluna coluna-acesso">
         {voltar}
         {!supabase && import.meta.env.DEV && <FaltaConfigurar />}
         {erros && <ResumoErros erros={erros} />}

@@ -100,6 +100,7 @@ code { padding: 1px 5px; border-radius: var(--raio); background: var(--gelo); fo
 
 /* uma coluna, alinhada à esquerda com a marca */
 .coluna { max-width: 30rem; }
+.coluna-acesso { margin-inline: auto; }
 .coluna-painel { max-width: 38rem; }
 
 .rodape { border-top: 1px solid var(--linha); }
